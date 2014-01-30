@@ -1,0 +1,8 @@
+syntax: regexp
+((\.iml)|(\.idea))
+syntax: regexp
+((\.classpath)|(\.project)|(\.settings))
+syntax: regexp
+((target/)|(bin/))
+syntax: regexp
+(.DS_Store)
