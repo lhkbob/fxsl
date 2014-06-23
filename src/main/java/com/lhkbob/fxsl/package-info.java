@@ -95,7 +95,7 @@
  *     </pre>
  *     The second and third examples represent the equivalent functional signature, but the first
  *     shows the syntactic sugar provided for multi-argument functions.  The '-&gt;' notation is right
- *     associative, so to have a function parameter, you would need to surround it in parentheses.
+ *     associative, so to declare a function parameter, you would need to surround it in parentheses.
  * </p>
  *
  * <h2>Value Instances</h2>

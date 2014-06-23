@@ -3,6 +3,6 @@ syntax: regexp
 syntax: regexp
 ((\.classpath)|(\.project)|(\.settings))
 syntax: regexp
-((target/)|(bin/))
+((target/)|(bin/)(gen/))
 syntax: regexp
 (.DS_Store)

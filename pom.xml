@@ -9,6 +9,10 @@
     <name>FXSL</name>
     <description>Functional language for high-level shaders.</description>
 
+    <properties>
+        <antlr.version>4.2.2</antlr.version>
+    </properties>
+
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -164,7 +168,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.1</version>
+                <version>${antlr.version}</version>
                 <executions>
                     <execution>
                         <id>antlr-generate</id>
@@ -182,7 +186,7 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>4.1</version>
+            <version>${antlr.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
