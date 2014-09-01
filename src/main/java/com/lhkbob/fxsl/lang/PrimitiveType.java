@@ -10,6 +10,17 @@ package com.lhkbob.fxsl.lang;
  * operating semantics are so specialized it makes sense to treat them as unique types. Sampler arrays,
  * supported in newer versions of OpenGL, are represented as arrays of the base samplers.
  *
+ * # Assignability and type conversions
+ *
+ * In almost all cases, primitive types are only assignable to variables and parameters of the exact same
+ * type. The exception to this is that integer primitives can be assigned to float types and can be converted
+ * to floats. It does *not* go the other direction. This is consistent behavior with other languages like
+ * Java.
+ *
+ * # Concreteness
+ *
+ * All primitive types are concrete.
+ *
  * @author Michael Ludwig
  */
 public enum PrimitiveType implements Type {
