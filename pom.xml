@@ -176,8 +176,29 @@
                         <goals>
                             <goal>antlr4</goal>
                         </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-visitor</argument>
+                                <argument>-no-listener</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
+                    <docletArtifact>
+                        <groupId>ch.raffael.pegdown-doclet</groupId>
+                        <artifactId>pegdown-doclet</artifactId>
+                        <version>1.1</version>
+                    </docletArtifact>
+                    <useStandardDocletOptions>true</useStandardDocletOptions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
