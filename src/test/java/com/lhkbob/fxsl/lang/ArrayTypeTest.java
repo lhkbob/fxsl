@@ -2,6 +2,10 @@ package com.lhkbob.fxsl.lang;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 /**
@@ -53,6 +57,27 @@ public class ArrayTypeTest {
         ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression("b", PrimitiveType.INT));
         assertFalse(t1.equals(t2));
         assertFalse(t1.hashCode() == t2.hashCode());
+    }
+
+    @Test
+    public void testOtherTypeConversionAndAssignability() {
+        assertNotAssignable(PrimitiveType.INT);
+        assertNotAssignable(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT), PrimitiveType.FLOAT));
+
+        Map<String, Type> fields = new HashMap<>();
+        fields.put("test", PrimitiveType.INT);
+        assertNotAssignable(new StructType(fields));
+
+        assertNotAssignable(new UnionType(Arrays.<Type>asList(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
+                                                                               PrimitiveType.INT),
+                                                              new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
+                                                                               PrimitiveType.FLOAT))));
+    }
+
+    private void assertNotAssignable(Type other) {
+        ArrayType t = new ArrayType(PrimitiveType.INT, 4);
+        assertNull(t.getValidConversion(other));
+        assertFalse(t.isAssignableFrom(other));
     }
 
     @Test
