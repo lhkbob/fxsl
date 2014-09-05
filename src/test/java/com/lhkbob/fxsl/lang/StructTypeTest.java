@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
  * @author Michael Ludwig
  */
 public class StructTypeTest {
-    private StructType makeType(List<String> fieldNames, List<? extends Type> fieldTypes) {
+    public static StructType makeType(List<String> fieldNames, List<? extends Type> fieldTypes) {
         Map<String, Type> fields = new HashMap<>();
         for (int i = 0; i < fieldNames.size(); i++) {
             fields.put(fieldNames.get(i), fieldTypes.get(i));
@@ -48,43 +48,43 @@ public class StructTypeTest {
     }
 
     @Test
-    public void testWildcardConversionAndAssignability() {
+    public void testWildcardAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a", "b"),
                                  Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
         WildcardType t2 = new WildcardType(new Scope(), "t");
 
         assertTrue(t1.isAssignableFrom(t2));
-        assertEquals(t1, t1.getValidConversion(t2));
+        assertEquals(t1, t1.getSharedType(t2));
     }
 
     @Test
-    public void testOtherTypeConversionAndAssignability() {
+    public void testOtherTypeAssignabilityAndSharedTypes() {
         assertNotAssignable(PrimitiveType.INT);
         assertNotAssignable(new ArrayType(PrimitiveType.INT, 1));
-        assertNotAssignable(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT), PrimitiveType.FLOAT));
-        assertNotAssignable(new UnionType(Arrays.<Type>asList(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                               PrimitiveType.INT),
-                                                              new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                               PrimitiveType.FLOAT))));
+        assertNotAssignable(new FunctionType(Arrays.asList(PrimitiveType.INT), PrimitiveType.FLOAT));
+        assertNotAssignable(new UnionType(new HashSet<>(Arrays.asList(new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                       PrimitiveType.INT),
+                                                                      new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                       PrimitiveType.FLOAT)))));
     }
 
     private void assertNotAssignable(Type other) {
         StructType t = makeType(Arrays.asList("a", "b"),
                                 Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
-        assertNull(t.getValidConversion(other));
+        assertNull(t.getSharedType(other));
         assertFalse(t.isAssignableFrom(other));
     }
 
     @Test
-    public void testSelfConversionAndAssignability() {
+    public void testSelfAssignabilityAndSharedTypes() {
         StructType t = makeType(Arrays.asList("a", "b"),
                                 Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
         assertTrue(t.isAssignableFrom(t));
-        assertEquals(t, t.getValidConversion(t));
+        assertEquals(t, t.getSharedType(t));
     }
 
     @Test
-    public void testSubsetConversionAndAssignability() {
+    public void testSubsetAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a", "b"),
                                  Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
         StructType t2 = makeType(Arrays.asList("a", "b", "c"),
@@ -93,12 +93,12 @@ public class StructTypeTest {
         assertTrue(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertEquals(t1, t1.getValidConversion(t2));
-        assertEquals(t1, t2.getValidConversion(t1));
+        assertEquals(t1, t1.getSharedType(t2));
+        assertEquals(t1, t2.getSharedType(t1));
     }
 
     @Test
-    public void testOverlappingConversionAndAssignability() {
+    public void testOverlappingAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a", "b", "d"),
                                  Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL, PrimitiveType.INT));
         StructType t2 = makeType(Arrays.asList("a", "b", "c"),
@@ -110,12 +110,12 @@ public class StructTypeTest {
         assertFalse(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertEquals(conversion, t1.getValidConversion(t2));
-        assertEquals(conversion, t2.getValidConversion(t1));
+        assertEquals(conversion, t1.getSharedType(t2));
+        assertEquals(conversion, t2.getSharedType(t1));
     }
 
     @Test
-    public void testDisjointConversionAndAssignability() {
+    public void testDisjointAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a1", "b1"),
                                  Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
         StructType t2 = makeType(Arrays.asList("a2", "b2"),
@@ -124,12 +124,12 @@ public class StructTypeTest {
         assertFalse(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertNull(t1.getValidConversion(t2));
-        assertNull(t2.getValidConversion(t1));
+        assertNull(t1.getSharedType(t2));
+        assertNull(t2.getSharedType(t1));
     }
 
     @Test
-    public void testFieldTypeConversionAndAssignability() {
+    public void testFieldTypeAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a", "b"),
                                  Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
         StructType t2 = makeType(Arrays.asList("a", "b"),
@@ -138,12 +138,12 @@ public class StructTypeTest {
         assertTrue(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertEquals(t1, t1.getValidConversion(t2));
-        assertEquals(t1, t2.getValidConversion(t1));
+        assertEquals(t1, t1.getSharedType(t2));
+        assertEquals(t1, t2.getSharedType(t1));
     }
 
     @Test
-    public void testWrongFieldTypesConversionAndAssignability() {
+    public void testWrongFieldTypesAssignabilityAndSharedTypes() {
         StructType t1 = makeType(Arrays.asList("a", "b"),
                                  Arrays.asList(PrimitiveType.BOOL, PrimitiveType.FLOAT));
         StructType t2 = makeType(Arrays.asList("a", "b"),
@@ -152,8 +152,8 @@ public class StructTypeTest {
         assertFalse(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertNull(t1.getValidConversion(t2));
-        assertNull(t2.getValidConversion(t1));
+        assertNull(t1.getSharedType(t2));
+        assertNull(t2.getSharedType(t1));
     }
 
     @Test(expected = UnsupportedOperationException.class)

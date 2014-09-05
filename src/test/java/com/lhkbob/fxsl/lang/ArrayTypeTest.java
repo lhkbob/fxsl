@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -60,58 +61,58 @@ public class ArrayTypeTest {
     }
 
     @Test
-    public void testOtherTypeConversionAndAssignability() {
+    public void testOtherTypeAssignabilityAndSharedTypes() {
         assertNotAssignable(PrimitiveType.INT);
-        assertNotAssignable(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT), PrimitiveType.FLOAT));
+        assertNotAssignable(new FunctionType(Arrays.asList(PrimitiveType.INT), PrimitiveType.FLOAT));
 
         Map<String, Type> fields = new HashMap<>();
         fields.put("test", PrimitiveType.INT);
         assertNotAssignable(new StructType(fields));
 
-        assertNotAssignable(new UnionType(Arrays.<Type>asList(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                               PrimitiveType.INT),
-                                                              new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                               PrimitiveType.FLOAT))));
+        assertNotAssignable(new UnionType(new HashSet<>(Arrays.asList(new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                       PrimitiveType.INT),
+                                                                      new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                       PrimitiveType.FLOAT)))));
     }
 
     private void assertNotAssignable(Type other) {
         ArrayType t = new ArrayType(PrimitiveType.INT, 4);
-        assertNull(t.getValidConversion(other));
+        assertNull(t.getSharedType(other));
         assertFalse(t.isAssignableFrom(other));
     }
 
     @Test
-    public void testWildcardConversionAndAssignability() {
+    public void testWildcardAssignabilityAndSharedTypes() {
         ArrayType t1 = new ArrayType(PrimitiveType.INT, 4);
         WildcardType t2 = new WildcardType(new Scope(), "a");
 
         assertTrue(t1.isAssignableFrom(t2));
 
-        Type conversion = t1.getValidConversion(t2);
+        Type conversion = t1.getSharedType(t2);
         assertEquals(t1, conversion);
     }
 
     @Test
-    public void testSelfConversionAndAssignability() {
+    public void testSelfAssignabilityAndSharedTypes() {
         ArrayType t = new ArrayType(PrimitiveType.INT, 4);
         assertTrue(t.isAssignableFrom(t));
-        assertEquals(t, t.getValidConversion(t));
+        assertEquals(t, t.getSharedType(t));
     }
 
     @Test
-    public void testComponentTypeConversionAndAssignability() {
+    public void testComponentTypeAssignabilityAndSharedTypes() {
         ArrayType t1 = new ArrayType(PrimitiveType.FLOAT, 4);
         ArrayType t2 = new ArrayType(PrimitiveType.INT, 4);
 
         assertTrue(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
 
-        assertEquals(t1, t1.getValidConversion(t2));
-        assertEquals(t1, t2.getValidConversion(t1));
+        assertEquals(t1, t1.getSharedType(t2));
+        assertEquals(t1, t2.getSharedType(t1));
     }
 
     @Test
-    public void testLengthConversionAndAssignability() {
+    public void testLengthAssignabilityAndSharedTypes() {
         ArrayType t1 = new ArrayType(PrimitiveType.INT, 4);
         ArrayType t2 = new ArrayType(PrimitiveType.INT, 5);
         ArrayType t3 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
@@ -119,14 +120,14 @@ public class ArrayTypeTest {
         // test when both arrays have concrete lengths
         assertFalse(t1.isAssignableFrom(t2));
         assertFalse(t2.isAssignableFrom(t1));
-        assertNull(t1.getValidConversion(t2));
-        assertNull(t2.getValidConversion(t1));
+        assertNull(t1.getSharedType(t2));
+        assertNull(t2.getSharedType(t1));
 
         // test when argument array has wildcard length
         assertTrue(t1.isAssignableFrom(t3));
         assertTrue(t3.isAssignableFrom(t1));
-        assertEquals(t1, t1.getValidConversion(t3));
-        assertEquals(t1, t3.getValidConversion(t1));
+        assertEquals(t1, t1.getSharedType(t3));
+        assertEquals(t1, t3.getSharedType(t1));
     }
 
     @Test

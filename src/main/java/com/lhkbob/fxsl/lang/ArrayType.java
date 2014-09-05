@@ -15,10 +15,10 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * The length of an array must either be an integer primitive, or an identifier. If an identifier is used,
  * the array type has a wildcard length and the specified identifier declares an implicit parameter of type
- * int that is replaced with any array instance's length when used. Arrays with explicit lengths must
- * have a length greater than or equal to one.
+ * int that is replaced with any array instance's length when used, which exists in the same scope as the
+ * defined array type. Arrays with explicit lengths must have a length greater than or equal to one.
  *
- * ## Assignability and type conversions
+ * ## Assignability and shared types
  *
  * Array types are only assignable to other array types so long as certain rules apply, and to wildcards.
  * For an array to be assignable to another array, the component type of the first array must be assignable to
@@ -28,7 +28,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * wildcard length then a constraint is added that its length be equal to the second's length (valid
  * regardless of the second's length type).
  *
- * The type conversion between two arrays is a new array type that has a component type equal to the type
+ * The shared type between two arrays is a new array type that has a component type equal to the type
  * conversion between the two arrays' component types. If the component type conversion is invalid, the two
  * arrays cannot be converted together. If both input arrays have explicit lengths, they must be equal and the
  * same value is used for the converted array; otherwise the conversion is invalid. If only one input array
@@ -36,7 +36,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * have wildcard lengths, one is chosen arbitrarily and a constraint is added to the other.
  *
  * When assigned to a wildcard, the wildcard must resolve to the array type or a compilation error results.
- * Similarly, type conversion between an array and a wildcard results in the array type.
+ * Similarly, shared type between an array and a wildcard results in the array type.
  *
  * ## Concreteness
  *
@@ -45,6 +45,9 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 public class ArrayType implements Type {
+    private static final double BASE_COMPLEXITY = 10.0;
+    private static final double CONST_LEN_COMPLEXITY = 1.0;
+
     private final Type componentType;
     private final Integer constantLength;
     private final ParameterExpression wildcardLength;
@@ -128,8 +131,28 @@ public class ArrayType implements Type {
         return wildcardLength;
     }
 
-    // FIXME must allow constant types to be assigned to wildcard lengths, otherwise it won't be possible
-    // to pass an array value into a function that is typed like foo[a]
+    @Override
+    public double getTypeComplexity() {
+        return BASE_COMPLEXITY + componentType.getTypeComplexity() +
+               (constantLength != null ? CONST_LEN_COMPLEXITY : 0.0);
+    }
+
+    @Override
+    public double getAssignmentCost(Type t) {
+        if (!isAssignableFrom(t)) {
+            return Double.POSITIVE_INFINITY;
+        } else if (t instanceof WildcardType) {
+            return getTypeComplexity();
+        } else {
+            ArrayType other = (ArrayType) t;
+            double componentCost = componentType.getAssignmentCost(other.componentType);
+            double lenCost = ((constantLength != null && other.constantLength != null) ||
+                              (wildcardLength != null && other.wildcardLength != null) ? 0.0
+                                                                                       : CONST_LEN_COMPLEXITY);
+            return componentCost + lenCost;
+        }
+    }
+
     @Override
     public boolean isAssignableFrom(Type t) {
         if (!(t instanceof ArrayType)) {
@@ -156,7 +179,7 @@ public class ArrayType implements Type {
     }
 
     @Override
-    public Type getValidConversion(Type t) {
+    public Type getSharedType(Type t) {
         if (!(t instanceof ArrayType)) {
             // the conversion with a wildcard type is the array type unmodified, otherwise no other types are supported
             return t instanceof WildcardType ? this : null;
@@ -164,7 +187,7 @@ public class ArrayType implements Type {
 
         ArrayType other = (ArrayType) t;
 
-        Type superComponentType = componentType.getValidConversion(other.componentType);
+        Type superComponentType = componentType.getSharedType(other.componentType);
         if (superComponentType == null) {
             // component type conversion does not exist so array type conversion is impossible
             return null;
@@ -216,5 +239,14 @@ public class ArrayType implements Type {
             hash += hash * 37 + wildcardLength.hashCode();
         }
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        if (wildcardLength != null) {
+            return String.format("%s[%s]", componentType, wildcardLength.getParameterName());
+        } else {
+            return String.format("%s[%d]", componentType, constantLength);
+        }
     }
 }

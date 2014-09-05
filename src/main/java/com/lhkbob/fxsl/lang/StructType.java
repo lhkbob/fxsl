@@ -18,7 +18,7 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * same field but have different types, the structs are different. Similarly, two structs with the same typed
  * field are not equal if the label is not the same.
  *
- * ## Assignability and type conversions
+ * ## Assignability and shared types
  *
  * A type can only be assigned to a struct value if that type is a wildcard or another struct subject to
  * restrictions listed below. If the type is a wildcard, the assignment or conversion creates a constraint
@@ -26,12 +26,12 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * types `A` and `B`, instances of `B` are assignable to `A` if `B` has a field name for every field in `A`
  * and the types of `B`'s matching fields are assignable to the corresponding fields in `A`.
  *
- * The type conversion between two structs is a new struct type made of the field intersection between the
+ * The shared type between two structs is a new struct type made of the field intersection between the
  * two structs, and the types of the fields the conversion of each corresponding field type. If a field's type
- * conversion is invalid that field is excluded. If the field intersection is empty the struct conversion is
+ * conversion is invalid that field is excluded. If the field intersection is empty the shared type is
  * invalid.
  *
- * Like other types, a struct conversion with a wildcard produces the struct unmodified and adds a
+ * Like other types, a struct with a wildcard produces the struct unmodified and adds a
  * constraint on the wildcard's instantiation.
  *
  * ## Concreteness
@@ -41,6 +41,9 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * @author Michael Ludwig
  */
 public class StructType implements Type {
+    private static final double BASE_COST = 10.0;
+    private static final double FIELD_COST = 1.0;
+
     private final Map<String, Type> fields;
 
     /**
@@ -51,7 +54,7 @@ public class StructType implements Type {
      * @throws java.lang.IllegalArgumentException if `fields` is empty
      * @throws java.lang.NullPointerException     if `fields` is null or contains null elements
      */
-    public StructType(Map<String, Type> fields) {
+    public StructType(Map<String, ? extends Type> fields) {
         notNull("fields", fields);
         notEmpty("fields", fields.keySet());
         noNullElements("fields", fields.values());
@@ -81,6 +84,42 @@ public class StructType implements Type {
     }
 
     @Override
+    public double getTypeComplexity() {
+        double fieldCost = 0.0;
+        for (Type field: fields.values()) {
+            fieldCost += field.getTypeComplexity();
+        }
+        fieldCost += fields.size() * FIELD_COST;
+        return BASE_COST + fieldCost;
+    }
+
+    @Override
+    public double getAssignmentCost(Type t) {
+        if (!isAssignableFrom(t)) {
+            return Double.POSITIVE_INFINITY;
+        } else if (t instanceof WildcardType) {
+            return getTypeComplexity();
+        } else {
+            double cost = 0.0;
+
+            // this type's fields are a subset of t's fields
+            Map<String, Type> otherFields = ((StructType) t).fields;
+            for (Map.Entry<String, Type> f : otherFields.entrySet()) {
+                Type orig = fields.get(f.getKey());
+                if (orig == null) {
+                    // field from the other type must be removed completely
+                    cost += FIELD_COST + f.getValue().getTypeComplexity();
+                } else {
+                    // field from the other type can be assigned to this type
+                    cost += orig.getAssignmentCost(f.getValue());
+                }
+            }
+
+            return cost;
+        }
+    }
+
+    @Override
     public boolean isAssignableFrom(Type t) {
         if (!(t instanceof StructType)) {
             return t instanceof WildcardType;
@@ -101,7 +140,7 @@ public class StructType implements Type {
     }
 
     @Override
-    public Type getValidConversion(Type t) {
+    public Type getSharedType(Type t) {
         if (!(t instanceof StructType)) {
             return (t instanceof WildcardType ? this : null);
         }
@@ -111,7 +150,7 @@ public class StructType implements Type {
         for (Map.Entry<String, Type> f : fields.entrySet()) {
             Type otherType = otherFields.get(f.getKey());
             if (otherType != null) {
-                Type fieldConversion = f.getValue().getValidConversion(otherType);
+                Type fieldConversion = f.getValue().getSharedType(otherType);
                 if (fieldConversion == null) {
                     // common key with inconvertible types makes the whole thing inconvertible
                     return null;
@@ -146,5 +185,22 @@ public class StructType implements Type {
     @Override
     public int hashCode() {
         return fields.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        boolean first = true;
+        for (Map.Entry<String, Type> f: fields.entrySet()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(f.getKey()).append(":").append(f.getValue().toString());
+        }
+        sb.append("}");
+        return sb.toString();
     }
 }

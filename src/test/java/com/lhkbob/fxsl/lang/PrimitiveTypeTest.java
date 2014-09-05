@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -17,33 +18,33 @@ import static org.junit.Assert.*;
  */
 public class PrimitiveTypeTest {
     @Test
-    public void testIntToFloatConversionAndAssignability() {
+    public void testIntToFloatAssignabilityAndSharedTypes() {
         assertTrue(PrimitiveType.FLOAT.isAssignableFrom(PrimitiveType.INT));
         assertFalse(PrimitiveType.INT.isAssignableFrom(PrimitiveType.FLOAT));
 
-        assertEquals(PrimitiveType.FLOAT, PrimitiveType.INT.getValidConversion(PrimitiveType.FLOAT));
-        assertEquals(PrimitiveType.FLOAT, PrimitiveType.FLOAT.getValidConversion(PrimitiveType.INT));
+        assertEquals(PrimitiveType.FLOAT, PrimitiveType.INT.getSharedType(PrimitiveType.FLOAT));
+        assertEquals(PrimitiveType.FLOAT, PrimitiveType.FLOAT.getSharedType(PrimitiveType.INT));
     }
 
     @Test
-    public void testWildcardConversionAndAssignability() {
+    public void testWildcardAssignabilityAndSharedTypes() {
         WildcardType wild = new WildcardType(new Scope(), "T");
         for (PrimitiveType type : PrimitiveType.values()) {
-            assertEquals(type, type.getValidConversion(wild));
+            assertEquals(type, type.getSharedType(wild));
             assertTrue(type.isAssignableFrom(wild));
         }
     }
 
     @Test
-    public void testSelfConversionAndAssignability() {
+    public void testSelfAssignabilityAndSharedTypes() {
         for (PrimitiveType type : PrimitiveType.values()) {
-            assertEquals(type, type.getValidConversion(type));
+            assertEquals(type, type.getSharedType(type));
             assertTrue(type.isAssignableFrom(type));
         }
     }
 
     @Test
-    public void testCrossTypeConversionAndAssignability() {
+    public void testCrossTypeAssignabilityAndSharedTypes() {
         // within primitive type failures to convert
         for (PrimitiveType type : PrimitiveType.values()) {
             if (type == PrimitiveType.FLOAT || type == PrimitiveType.INT) {
@@ -52,7 +53,7 @@ public class PrimitiveTypeTest {
 
             for (PrimitiveType other : PrimitiveType.values()) {
                 if (other != type) {
-                    assertNull(type.getValidConversion(other));
+                    assertNull(type.getSharedType(other));
                     assertFalse(type.isAssignableFrom(other));
                 }
             }
@@ -60,24 +61,24 @@ public class PrimitiveTypeTest {
 
         // other types
         for (PrimitiveType type : PrimitiveType.values()) {
-            assertConversionAndAssignability(type, new ArrayType(PrimitiveType.INT, 1));
-            assertConversionAndAssignability(type, new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                    PrimitiveType.FLOAT));
+            assertAssignabilityAndSharedTypes(type, new ArrayType(PrimitiveType.INT, 1));
+            assertAssignabilityAndSharedTypes(type, new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                     PrimitiveType.FLOAT));
 
             Map<String, Type> fields = new HashMap<>();
             fields.put("test", PrimitiveType.INT);
-            assertConversionAndAssignability(type, new StructType(fields));
+            assertAssignabilityAndSharedTypes(type, new StructType(fields));
 
-            assertConversionAndAssignability(type,
-                                             new UnionType(Arrays.<Type>asList(new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                                                PrimitiveType.INT),
-                                                                               new FunctionType(Arrays.<Type>asList(PrimitiveType.INT),
-                                                                                                PrimitiveType.FLOAT))));
+            assertAssignabilityAndSharedTypes(type,
+                                              new UnionType(new HashSet<>(Arrays.asList(new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                                         PrimitiveType.INT),
+                                                                                        new FunctionType(Arrays.asList(PrimitiveType.INT),
+                                                                                                         PrimitiveType.FLOAT)))));
         }
     }
 
-    private void assertConversionAndAssignability(PrimitiveType t, Type other) {
-        assertNull(t.getValidConversion(other));
+    private void assertAssignabilityAndSharedTypes(PrimitiveType t, Type other) {
+        assertNull(t.getSharedType(other));
         assertFalse(t.isAssignableFrom(other));
     }
 
