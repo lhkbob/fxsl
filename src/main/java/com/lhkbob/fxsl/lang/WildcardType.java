@@ -1,50 +1,51 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
- * WildcardType
- * ============
+ * Wildcard Types
+ * ==============
  *
- * # Banner Lord
+ * Wildcard types are special types that can match any other type in an FXSL program. As part of the
+ * compilation process all variables and parameters with wildcards have their types inferred or resolved at
+ * the point of invocation. This effectively creates a new program with the proper explicit types declared in
+ * place of the wildcard types.
  *
- * How is everyone going?
+ * Parameters and variables defined without an explicit type declaration implicitly create a new wildcard
+ * type for that value. It is also possible to declare types to have labeled wildcards by using a type name
+ * prefixed with '_'. This can be used to constrain the relationship between multiple parameters in a function
+ * while still maintaining flexibility. A named wildcard is valid within the scope that it was defined. All
+ * references to that type label will use the same wildcard type so any constraints imposed by possibly
+ * multiple references must validate in order for compilation to succeed.
  *
- * ## Extra test
+ * ## Assignability and shared types
  *
- * 1. `List 1`
- * 1. List 2 [with a link][link]
- * 1. List 3 {@link WildcardType}
- * 1. List 4 [WildcardType]
+ * Ignoring the issue of constraints upon type resolution, any type can be assigned to a wildcard. The
+ * shared type between a wildcard and any other type is that other type. If both are wildcards then one is
+ * chosen arbitrarily. Technically constraints affect assignability and shared types but they are a more
+ * complex system and are handled elsewhere.
  *
- * This is inline preformatted text.
- * So much nice things for formatting!
+ * ## Concreteness
  *
- * > Block quote?
- * > Hall back yall
- *
- * [link]: http://google.com
- *
- * Now for some actual real *code*:Now for some actual real *code*:Now for some actual real *code*:Now for
- * some actual real *code*:Now for some actual real *code*:Now for some actual real *code*:Now for some actual
- * real *code*:Now for some actual real *code*:Now for some actual real *code*:Now for some actual real
- * *code*:Now for some actual real *code*:Now for some actual real *code*:Now for some actual real *code*:Now
- * for some actual real *code*:Now for some actual real *code*:Now for some actual real *code*:Now for some
- * actual real *code*:
- *
- * ```java
- * WildcardType var = new WildcardType(new Scope(), "hello");
- * var.isConcrete();
- * ```
- *
- * Boom!
+ * Wildcard types are never concrete.
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class WildcardType implements Type {
     private final Scope scope;
     private final String label;
 
+    /**
+     * Create a new wildcard type that is to exist within `scope` and be named `label`. Wildcards with the
+     * same label in the same scope are equal. The constructor does *not* register the type with the scope.
+     *
+     * @param scope The scope this wildcard is declared in
+     * @param label The label for the wildcard
+     * @throws java.lang.NullPointerException if `scope` or `label` are null
+     */
     public WildcardType(Scope scope, String label) {
         notNull("scope", scope);
         notNull("label", label);
@@ -52,10 +53,20 @@ public class WildcardType implements Type {
         this.scope = scope;
     }
 
+    /**
+     * Get the scope that this wildcard type is valid within.
+     *
+     * @return The wildcard's scope
+     */
     public Scope getScope() {
         return scope;
     }
 
+    /**
+     * Get the label of this wildcard type.
+     *
+     * @return The wildcard's label
+     */
     public String getLabel() {
         return label;
     }
