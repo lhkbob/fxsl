@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -129,11 +128,10 @@ public class FunctionTypeTest {
                                                                                                              "b"),
                                                                                                Arrays.asList(PrimitiveType.INT,
                                                                                                              PrimitiveType.FLOAT)));
-        UnionType union = new UnionType(new HashSet<>(Arrays.asList(t2, t3)));
+        UnionType union = UnionTypeTest.makeType(t2, t3);
 
-        UnionType shared = new UnionType(new HashSet<>(Arrays.asList(t1,
-                                                                     new FunctionType(t1.getParameterTypes(),
-                                                                                      PrimitiveType.FLOAT))));
+        UnionType shared = UnionTypeTest.makeType(t1, new FunctionType(t1.getParameterTypes(),
+                                                                       PrimitiveType.FLOAT));
 
         assertTrue(t1.isAssignableFrom(union));
         assertEquals(shared, t1.getSharedType(union));
@@ -159,7 +157,7 @@ public class FunctionTypeTest {
                                                                                            Arrays.asList(PrimitiveType.INT,
                                                                                                          PrimitiveType.FLOAT,
                                                                                                          PrimitiveType.BOOL)));
-        UnionType union = new UnionType(new HashSet<>(Arrays.asList(t2, t3)));
+        UnionType union = UnionTypeTest.makeType(t2, t3);
 
         FunctionType shared = makeType(PrimitiveType.FLOAT, PrimitiveType.INT, StructTypeTest
                                                                                        .makeType(Arrays.asList("a",
@@ -193,7 +191,7 @@ public class FunctionTypeTest {
                                                                                             Arrays.asList(PrimitiveType.INT,
                                                                                                           PrimitiveType.FLOAT,
                                                                                                           PrimitiveType.BOOL)));
-        UnionType union = new UnionType(new HashSet<>(Arrays.asList(t2, t3)));
+        UnionType union = UnionTypeTest.makeType(t2, t3);
 
         assertFalse(t1.isAssignableFrom(union));
         assertNull(t1.getSharedType(union));
