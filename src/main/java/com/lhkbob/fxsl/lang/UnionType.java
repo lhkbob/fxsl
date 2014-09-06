@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,6 +52,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class UnionType implements Type {
     private static final double BASE_COST = 20.0;
     private static final double OPTION_COST = 3.0;

@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -44,7 +46,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * @author Michael Ludwig
  */
-public class ArrayType implements Type {
+@Immutable
+public final class ArrayType implements Type {
     private static final double BASE_COMPLEXITY = 10.0;
     private static final double CONST_LEN_COMPLEXITY = 1.0;
 

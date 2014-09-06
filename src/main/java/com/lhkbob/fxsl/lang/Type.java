@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.LogicalEquality;
+
 /**
  * Types in FXSL
  * =============
@@ -46,6 +48,7 @@ package com.lhkbob.fxsl.lang;
  *
  * @author Michael Ludwig
  */
+@LogicalEquality
 public interface Type {
     /**
      * Return whether or not `t` can be assigned to a variable or parameter of this type. This should

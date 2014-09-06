@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +63,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class FunctionType implements Type {
     private static final double BASE_COST = 20.0;
     private static final double PARAM_COST = 2.0;

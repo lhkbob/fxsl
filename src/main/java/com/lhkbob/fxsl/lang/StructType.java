@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +42,7 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class StructType implements Type {
     private static final double BASE_COST = 10.0;
     private static final double FIELD_COST = 1.0;

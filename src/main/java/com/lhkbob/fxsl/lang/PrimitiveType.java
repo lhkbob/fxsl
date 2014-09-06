@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 /**
  * Primitive Types
  * ===============
@@ -27,6 +29,7 @@ package com.lhkbob.fxsl.lang;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public enum PrimitiveType implements Type {
     /**
      * `BOOL` represents a boolean true or false value. By default the `bool` type name refers to this
