@@ -54,6 +54,23 @@ public class WildcardType implements Type {
     }
 
     /**
+     * Create a wildcard type that represents some dependent result of this type, such as accessing values
+     * as an array index or struct field, or invoking them as a function invoking. The new wildcard type
+     * exists in the same scope as this type. Its label is this type's base label appended by a colon and
+     * `access`. Thus, given a label of a wildcard type, all dependent accesses can be determined by
+     * separating it by ":". A colon is not an allowed character in identifiers so there is no risk of
+     * contaminating this  property from the FXSL code.
+     *
+     * @param access The dependent access label
+     * @return A new dependent wildcard type
+     * @throws java.lang.NullPointerException if `access` is null
+     */
+    public WildcardType createDependentType(String access) {
+        notNull("access", access);
+        return new WildcardType(scope, label + ":" + access);
+    }
+
+    /**
      * Get the scope that this wildcard type is valid within.
      *
      * @return The wildcard's scope
