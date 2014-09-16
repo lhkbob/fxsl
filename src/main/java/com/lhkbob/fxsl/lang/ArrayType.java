@@ -97,7 +97,6 @@ public final class ArrayType implements Type {
             }
         }
 
-
         this.componentType = componentType;
         this.constantLength = constantLength;
         this.wildcardLength = wildcardLength;
