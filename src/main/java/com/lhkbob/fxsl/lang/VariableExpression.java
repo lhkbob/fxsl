@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -20,6 +22,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class VariableExpression implements Expression {
     private final transient WildcardType type;
     private final String name;
@@ -93,5 +96,10 @@ public class VariableExpression implements Expression {
         result += 31 * result + name.hashCode();
         result += 31 * result + scope.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

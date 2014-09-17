@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -16,6 +18,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class ArrayAccess implements Expression {
     /**
      * The dependent access label used if the array expression being accessed is a wildcard type and the
@@ -107,5 +110,10 @@ public class ArrayAccess implements Expression {
     @Override
     public int hashCode() {
         return array.hashCode() ^ index.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return array.toString() + "[" + index.toString() + "]";
     }
 }

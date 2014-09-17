@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class StructValue implements Expression {
     private final transient StructType type;
     private final Map<String, Expression> fields;
@@ -105,5 +108,22 @@ public class StructValue implements Expression {
     @Override
     public int hashCode() {
         return fields.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        boolean first = true;
+        for (Map.Entry<String, Expression> f : fields.entrySet()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(f.getKey()).append(":").append(f.getValue().toString());
+        }
+        sb.append("}");
+        return sb.toString();
     }
 }

@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 /**
  * Primitive Values
  * ================
@@ -13,6 +15,7 @@ package com.lhkbob.fxsl.lang;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class PrimitiveValue implements Expression {
     private final Object value;
     private final transient PrimitiveType type;
@@ -89,5 +92,10 @@ public class PrimitiveValue implements Expression {
     @Override
     public int hashCode() {
         return value.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
     }
 }

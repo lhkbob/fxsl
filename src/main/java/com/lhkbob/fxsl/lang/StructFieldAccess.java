@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -15,6 +17,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class StructFieldAccess implements Expression {
     private final Expression struct;
     private final String field;
@@ -107,5 +110,10 @@ public class StructFieldAccess implements Expression {
     @Override
     public int hashCode() {
         return struct.hashCode() ^ field.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return struct.toString() + "[" + field + "]";
     }
 }

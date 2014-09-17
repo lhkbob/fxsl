@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -12,8 +14,13 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * Native expressions are always concrete.
  *
+ * Note that native expression's logical equality is equivalent to reference equality. This is because there
+ * are many native expressions that may evaluate to the same type, which is the only internal data available
+ * to a native expression.
+ *
  * @author Michael Ludwig
  */
+@Immutable
 public class NativeExpression implements Expression {
     private final Type type;
 
@@ -54,5 +61,10 @@ public class NativeExpression implements Expression {
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return "native(" + type.toString() + ")";
     }
 }

@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +25,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class ArrayValue implements Expression {
     private final transient ArrayType type;
     private final List<Expression> elements;
@@ -122,5 +125,22 @@ public class ArrayValue implements Expression {
     @Override
     public int hashCode() {
         return elements.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        boolean first = true;
+        for (Expression e: elements) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(e.toString());
+        }
+        sb.append(']');
+        return sb.toString();
     }
 }

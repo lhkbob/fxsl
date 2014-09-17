@@ -1,5 +1,7 @@
 package com.lhkbob.fxsl.lang;
 
+import com.lhkbob.fxsl.util.Immutable;
+
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
 
 /**
@@ -16,6 +18,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * @author Michael Ludwig
  */
+@Immutable
 public class ParameterExpression implements Expression {
     private final Type type;
     private final String name;
@@ -89,5 +92,10 @@ public class ParameterExpression implements Expression {
         result += 31 * result + type.hashCode();
         result += 31 * result + scope.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
