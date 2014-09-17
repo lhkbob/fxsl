@@ -25,8 +25,9 @@ public class ArrayTypeTest {
     public void testEqualsAndHashCode() {
         ArrayType t1a = new ArrayType(PrimitiveType.INT, 5);
         ArrayType t1b = new ArrayType(PrimitiveType.INT, 5);
-        ArrayType t2a = new ArrayType(PrimitiveType.FLOAT, new ParameterExpression("a", PrimitiveType.INT));
-        ArrayType t2b = new ArrayType(PrimitiveType.FLOAT, new ParameterExpression("a", PrimitiveType.INT));
+        Scope scope = new Scope();
+        ArrayType t2a = new ArrayType(PrimitiveType.FLOAT, new ParameterExpression(scope, "a", PrimitiveType.INT));
+        ArrayType t2b = new ArrayType(PrimitiveType.FLOAT, new ParameterExpression(scope, "a", PrimitiveType.INT));
 
         assertEquals(t1a, t1b);
         assertEquals(t2a, t2b);
@@ -54,8 +55,9 @@ public class ArrayTypeTest {
 
     @Test
     public void testDifferentWildcardLengthsNotEquals() {
-        ArrayType t1 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
-        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression("b", PrimitiveType.INT));
+        Scope scope = new Scope();
+        ArrayType t1 = new ArrayType(PrimitiveType.INT, new ParameterExpression(scope, "a", PrimitiveType.INT));
+        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression(scope, "b", PrimitiveType.INT));
         assertFalse(t1.equals(t2));
         assertFalse(t1.hashCode() == t2.hashCode());
     }
@@ -115,7 +117,7 @@ public class ArrayTypeTest {
     public void testLengthAssignabilityAndSharedTypes() {
         ArrayType t1 = new ArrayType(PrimitiveType.INT, 4);
         ArrayType t2 = new ArrayType(PrimitiveType.INT, 5);
-        ArrayType t3 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
+        ArrayType t3 = new ArrayType(PrimitiveType.INT, new ParameterExpression(new Scope(), "a", PrimitiveType.INT));
 
         // test when both arrays have concrete lengths
         assertFalse(t1.isAssignableFrom(t2));
@@ -137,10 +139,10 @@ public class ArrayTypeTest {
         assertTrue(t1.isConcrete());
 
         // not concrete
-        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
+        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression(new Scope(), "a", PrimitiveType.INT));
         ArrayType t3 = new ArrayType(new WildcardType(new Scope(), "a"), 4);
         ArrayType t4 = new ArrayType(new WildcardType(new Scope(), "a"),
-                                     new ParameterExpression("b", PrimitiveType.INT));
+                                     new ParameterExpression(new Scope(), "b", PrimitiveType.INT));
 
         assertFalse(t2.isConcrete());
         assertFalse(t3.isConcrete());
@@ -149,7 +151,7 @@ public class ArrayTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorWildcardLengthBadType() {
-        new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.FLOAT));
+        new ArrayType(PrimitiveType.INT, new ParameterExpression(new Scope(), "a", PrimitiveType.FLOAT));
     }
 
     @Test(expected = NullPointerException.class)
@@ -176,17 +178,18 @@ public class ArrayTypeTest {
     @Test
     public void testGetConcreteLength() {
         ArrayType t1 = new ArrayType(PrimitiveType.INT, 4);
-        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
+        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression(new Scope(), "a", PrimitiveType.INT));
         assertEquals(4, t1.getConcreteLength());
         assertTrue(t2.getConcreteLength() < 0);
     }
 
     @Test
     public void testGetWildcardLength() {
+        Scope scope = new Scope();
         ArrayType t1 = new ArrayType(PrimitiveType.INT, 4);
-        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression("a", PrimitiveType.INT));
+        ArrayType t2 = new ArrayType(PrimitiveType.INT, new ParameterExpression(scope, "a", PrimitiveType.INT));
 
         assertNull(t1.getWildcardLength());
-        assertEquals(new ParameterExpression("a", PrimitiveType.INT), t2.getWildcardLength());
+        assertEquals(new ParameterExpression(scope, "a", PrimitiveType.INT), t2.getWildcardLength());
     }
 }
