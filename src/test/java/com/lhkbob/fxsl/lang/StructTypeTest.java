@@ -206,4 +206,9 @@ public class StructTypeTest {
     public void testConstructorNullFieldInMap() {
         makeType(Arrays.asList("a", "b"), Arrays.asList(PrimitiveType.FLOAT, null));
     }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorNullFieldNameInMap() {
+        makeType(Arrays.asList("a", null), Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.INT));
+    }
 }

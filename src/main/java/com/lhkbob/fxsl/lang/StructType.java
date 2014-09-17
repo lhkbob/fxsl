@@ -60,6 +60,7 @@ public class StructType implements Type {
     public StructType(Map<String, ? extends Type> fields) {
         notNull("fields", fields);
         notEmpty("fields", fields.keySet());
+        noNullElements("fields", fields.keySet());
         noNullElements("fields", fields.values());
 
         this.fields = Collections.unmodifiableMap(new HashMap<>(fields));

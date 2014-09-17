@@ -41,6 +41,7 @@ public class StructValue implements Expression {
     public StructValue(Map<String, Expression> fields) {
         notNull("fields", fields);
         notEmpty("fields", fields.keySet());
+        noNullElements("fields", fields.keySet());
         noNullElements("fields", fields.values());
 
         Map<String, Type> fieldTypes = new HashMap<>();
