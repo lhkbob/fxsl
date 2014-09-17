@@ -22,7 +22,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * @author Michael Ludwig
  */
 public class ArrayValue implements Expression {
-    private final ArrayType type;
+    private final transient ArrayType type;
     private final List<Expression> elements;
 
     /**
@@ -114,11 +114,11 @@ public class ArrayValue implements Expression {
             return false;
         }
         ArrayValue v = (ArrayValue) o;
-        return v.type.equals(type) && v.elements.equals(elements);
+        return v.elements.equals(elements);
     }
 
     @Override
     public int hashCode() {
-        return type.hashCode() ^ elements.hashCode();
+        return elements.hashCode();
     }
 }

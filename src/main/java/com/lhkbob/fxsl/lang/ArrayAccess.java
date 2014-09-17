@@ -26,7 +26,7 @@ public class ArrayAccess implements Expression {
     private final Expression array;
     private final Expression index;
 
-    private final Type componentType;
+    private final transient Type componentType;
 
     /**
      * Create a new array access expression that accesses `array` at the given `index`.
