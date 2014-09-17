@@ -134,4 +134,9 @@ public enum PrimitiveType implements Type {
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }
