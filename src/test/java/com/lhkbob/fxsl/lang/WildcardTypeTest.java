@@ -94,4 +94,19 @@ public class WildcardTypeTest {
         WildcardType t = new WildcardType(scope, "t");
         assertSame(scope, t.getScope());
     }
+
+    @Test
+    public void testCreateDependentType() {
+        Scope scope = new Scope();
+        WildcardType base = new WildcardType(scope, "base");
+
+        WildcardType dep = base.createDependentType("sub");
+        assertEquals(scope, dep.getScope());
+        assertEquals("base:sub", dep.getLabel());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testCreateDependentTypeNullLabel() {
+        new WildcardType(new Scope(), "base").createDependentType(null);
+    }
 }

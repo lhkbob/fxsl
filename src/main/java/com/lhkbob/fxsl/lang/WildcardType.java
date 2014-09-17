@@ -132,6 +132,6 @@ public class WildcardType implements Type {
 
     @Override
     public String toString() {
-        return "_" + label;
+        return label;
     }
 }
