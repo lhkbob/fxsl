@@ -9,11 +9,13 @@ package com.lhkbob.fxsl.lang;
  * possible to have a primitive value constructor for values of that class of types. With this constraint,
  * PrimitiveValue represents float, int, and bool constants defined within FXSL code.
  *
+ * A primitive value is always concrete.
+ *
  * @author Michael Ludwig
  */
 public class PrimitiveValue implements Expression {
     private final Object value;
-    private final PrimitiveType type;
+    private final transient PrimitiveType type;
 
     /**
      * Create a new primitive value that will have the FLOAT primitive type and has the given `value`.
@@ -81,11 +83,11 @@ public class PrimitiveValue implements Expression {
             return false;
         }
         PrimitiveValue v = (PrimitiveValue) o;
-        return v.type.equals(type) && v.value.equals(value);
+        return v.value.equals(value);
     }
 
     @Override
     public int hashCode() {
-        return type.hashCode() ^ value.hashCode();
+        return value.hashCode();
     }
 }

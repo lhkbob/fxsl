@@ -14,10 +14,12 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * com.lhkbob.fxsl.lang.StructType}. The expression type of a struct value is implicitly defined by the fields
  * specified and their  corresponding expressions' types.
  *
+ * A struct value is concrete if all field values are concrete expressions.
+ *
  * @author Michael Ludwig
  */
 public class StructValue implements Expression {
-    private final StructType type;
+    private final transient StructType type;
     private final Map<String, Expression> fields;
 
     /**
@@ -97,11 +99,11 @@ public class StructValue implements Expression {
             return false;
         }
         StructValue v = (StructValue) o;
-        return v.type.equals(type) && v.fields.equals(fields);
+        return v.fields.equals(fields);
     }
 
     @Override
     public int hashCode() {
-        return type.hashCode() ^ fields.hashCode();
+        return fields.hashCode();
     }
 }

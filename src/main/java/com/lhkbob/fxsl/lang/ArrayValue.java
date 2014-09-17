@@ -19,6 +19,8 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * each index. This constructor is also usable when the length of the array is an unknown dynamic variable.
  * FIXME implement this feature and determine its syntax.
  *
+ * An array value is concrete if all element values are concrete.
+ *
  * @author Michael Ludwig
  */
 public class ArrayValue implements Expression {

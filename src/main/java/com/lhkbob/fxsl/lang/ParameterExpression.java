@@ -6,7 +6,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * Parameters
  * ==========
  *
- * Parameter expressions are variable references that resolve to the declared names of function parameters.
+ * Parameter expressions are variable references that resolved to the declared names of function parameters.
  * If a function is inlined the parameter expression may be replaced with the actual parameter expression.
  * Otherwise they dynamically represent the parameter expressions their owning function is invoked with.
  * Because parameters only exist in the declaration of a function value, parameter expressions are only seen
