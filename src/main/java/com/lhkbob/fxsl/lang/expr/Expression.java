@@ -1,5 +1,7 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.LogicalEquality;
 
 /**
@@ -9,7 +11,7 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * Expressions are the fundamental computational unit within FXSL. As a functional language most complex
  * operations can be represented as a complex expression that is the composition of multiple simpler concepts.
  * There are many different kinds of expressions, many of which correspond or are determined by the various
- * {@link com.lhkbob.fxsl.lang.Type types} in FXSL. Broadly speaking expressions can be classified into the
+ * {@link com.lhkbob.fxsl.lang.type.Type types} in FXSL. Broadly speaking expressions can be classified into the
  * following categories:
  *
  * 1. Constructors
@@ -21,10 +23,10 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  *
  * ### Constructors
  *
- * Constructors are explicitly constructed values in FXLS. Each complex type (arrays, structs, and
- * functions) have constructors that syntactically resemble the way their corresponding types are declared.
- * The primary difference is they reference child expressions instead of child types. A constructor implicitly
- * defines its type based on the type of constructor and the types of any child expressions.
+ * Constructors are explicitly constructed values in FXSL. Each complex type (arrays, structs,  functions,
+ * and function unions) have constructors that syntactically resemble the way their corresponding types are
+ * declared. The primary difference is they reference child expressions instead of child types. A constructor
+ * implicitly defines its type based on the type of constructor and the types of any child expressions.
  *
  * ### Selectors
  *
@@ -43,16 +45,15 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * reference is equal to the type of expression which it references.
  *
  * References are not concrete expressions. A fragment can reference a value that has not yet been declared
- * sequentially, so long as it is defined within the scope by the time the scope has been closed. One of the
- * stages of compilation is to remove reference expressions for the actual expressions they have been defined
- * as. Note that this may create cycles in the control flow graph; however there is no detectable way of
- * escaping the cycle then a compilation error is raised.
+ * sequentially, so long as it is defined within the scope by the time the scope has been closed. FXSL uses
+ * lazy evaluation to achieve this. This can be used to implement recursion when invoking a function
+ * that is referenced by name.
  *
  * ### Function invocations
  *
  * Function invocations effectively inline the function's body expression and replacing all of its parameter
  * expressions with the list of expressions the function is invoked with. If the value of the expression being
- * invoked is a function union ({@link com.lhkbob.fxsl.lang.UnionType}), the actual function is selected to
+ * invoked is a function union ({@link com.lhkbob.fxsl.lang.type.UnionType}), the actual function is selected to
  * minimize the conversion cost of the parameters. If the provided parameter values cannot be assigned to the
  * parameter expressions of the function a compilation error is raised.
  *
@@ -60,17 +61,11 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * invoking the actual function body it returns a new function value that has a parameter list consisting of
  * the remaining parameters that must be specified.
  *
- * ## Concreteness
- *
- * Expressions have a notion of concreteness that is related to the concreteness of types. However its
- * definition is expanded to include a number of scenarios not encountered when considering types only. Any
- * expression that depends on a value of non-concrete type that expression is not concrete. An expression that
- * cannot be simply be evaluated is not concrete. Several examples of this are function calls that are invoked
- * on unions, or variable references that have to be lazily resolved.
- *
  * @author Michael Ludwig
  */
-@LogicalEquality
+@LogicalEquality(def = "Two expressions are equal if they are the same category of expression, have equal " +
+                       "child expressions (respecting any order defined by the expression), and are defined" +
+                       " within the same scope")
 public interface Expression {
     /**
      * The Expression Visitor provides the visitor pattern for walking parsed expression trees. The visitor
@@ -113,15 +108,9 @@ public interface Expression {
     public Type getType();
 
     /**
-     * Determine whether or not this expression is concrete. A concrete expression is an expression that
-     * does not reference non-concrete types and does not require further processing or simplification to
-     * evaluate. Examples of expressions requiring more outside simplification are lazy references and
-     * function union selection. Expressions whose child expressions are not concrete cannot themselves be
-     * concrete.
-     *
-     * @return True if the expression is concrete
+     * @return The scope that this expression was defined in
      */
-    public boolean isConcrete();
+    public Scope getScope();
 
     /**
      * Invoke the appropriate `visit` method of the visitor based on the concrete class type of this

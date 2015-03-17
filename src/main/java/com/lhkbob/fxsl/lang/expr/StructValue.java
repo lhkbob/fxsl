@@ -1,5 +1,8 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.StructType;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
@@ -13,17 +16,16 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * =============
  *
  * Struct values are the constructor expressions that form instances of {@link
- * com.lhkbob.fxsl.lang.StructType}. The expression type of a struct value is implicitly defined by the fields
+ * com.lhkbob.fxsl.lang.type.StructType}. The expression type of a struct value is implicitly defined by the fields
  * specified and their  corresponding expressions' types.
- *
- * A struct value is concrete if all field values are concrete expressions.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public class StructValue implements Expression {
-    private final transient StructType type;
+    private final Scope scope;
     private final Map<String, Expression> fields;
+    private final transient StructType type;
 
     /**
      * Create a new struct value that is described completely by the map. The keys in the map are the field
@@ -34,11 +36,13 @@ public class StructValue implements Expression {
      * The expression type of this struct value is a {@link StructType} with the exact same field set with
      * types based on the declared types of the fields' expressions.
      *
+     * @param scope  The scope this struct was declared in
      * @param fields The map of field values defining the struct
      * @throws java.lang.IllegalArgumentException if `fields` is empty
      * @throws java.lang.NullPointerException     if `fields` is null or contains null elements
      */
-    public StructValue(Map<String, Expression> fields) {
+    public StructValue(Scope scope, Map<String, Expression> fields) {
+        notNull("scope", scope);
         notNull("fields", fields);
         notEmpty("fields", fields.keySet());
         noNullElements("fields", fields.keySet());
@@ -48,6 +52,7 @@ public class StructValue implements Expression {
         for (Map.Entry<String, Expression> e : fields.entrySet()) {
             fieldTypes.put(e.getKey(), e.getValue().getType());
         }
+        this.scope = scope;
         type = new StructType(fieldTypes);
         this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
     }
@@ -80,16 +85,8 @@ public class StructValue implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        if (!type.isConcrete()) {
-            return false;
-        }
-        for (Expression f : fields.values()) {
-            if (!f.isConcrete()) {
-                return false;
-            }
-        }
-        return true;
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -103,12 +100,12 @@ public class StructValue implements Expression {
             return false;
         }
         StructValue v = (StructValue) o;
-        return v.fields.equals(fields);
+        return v.scope.equals(scope) && v.fields.equals(fields);
     }
 
     @Override
     public int hashCode() {
-        return fields.hashCode();
+        return fields.hashCode() ^ scope.hashCode();
     }
 
     @Override

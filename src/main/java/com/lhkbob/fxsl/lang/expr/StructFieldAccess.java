@@ -1,5 +1,9 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.MetaType;
+import com.lhkbob.fxsl.lang.type.StructType;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -10,15 +14,13 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  * As a collection of labeled expressions, structs are useful collections of data. Accessing a field from a
  * struct is an expression that evaluates to the value of that field. Accessing a field that does not exist is
- * a compile time failure in FXSL. See {@link com.lhkbob.fxsl.lang.StructType} for more details.
- *
- * A struct field access is concrete if the entire struct expression is concrete, or when the struct value
- * is deterministic, if the field expression is concrete.
+ * a compile time failure in FXSL. See {@link com.lhkbob.fxsl.lang.type.StructType} for more details.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public class StructFieldAccess implements Expression {
+    private final Scope scope;
     private final Expression struct;
     private final String field;
 
@@ -29,13 +31,15 @@ public class StructFieldAccess implements Expression {
      * expression must evaluate to a struct type or a wildcard type. The type of this expression is the type
      * of the struct's field's expression, or a dependent wildcard if accessing a wildcard type.
      *
+     * @param scope The scope of this expression
      * @param struct The struct being accessed
      * @param field  The name of the field to access
      * @throws java.lang.IllegalArgumentException if the field does not exist in the struct type, or if
      *                                            `struct` does not have a struct or wildcard type
      * @throws java.lang.NullPointerException     if `struct` or `field` are null
      */
-    public StructFieldAccess(Expression struct, String field) {
+    public StructFieldAccess(Scope scope, Expression struct, String field) {
+        notNull("scope", scope);
         notNull("struct", struct);
         notNull("field", field);
 
@@ -45,21 +49,22 @@ public class StructFieldAccess implements Expression {
                 throw new IllegalArgumentException("Field does not exist in struct: " + field);
             }
             fieldType = t;
-        } else if (struct.getType() instanceof WildcardType) {
-            fieldType = ((WildcardType) struct.getType()).createDependentType(field);
+        } else if (struct.getType() instanceof MetaType) {
+            fieldType = new MetaType(new Scope());
         } else {
             throw new IllegalArgumentException("Field access must operate on structs or wildcards, not " +
                                                struct.getType());
         }
 
+        this.scope = scope;
         this.struct = struct;
         this.field = field;
     }
 
     /**
      * Get the expression that evaluates to the struct value having one of its fields accessed. The type of
-     * this expression will be a {@link com.lhkbob.fxsl.lang.StructType} or a {@link
-     * com.lhkbob.fxsl.lang.WildcardType}.
+     * this expression will be a {@link com.lhkbob.fxsl.lang.type.StructType} or a {@link
+     * MetaType}.
      *
      * @return The struct expression
      */
@@ -84,13 +89,8 @@ public class StructFieldAccess implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        if (struct instanceof StructValue) {
-            return ((StructValue) struct).getField(field).isConcrete();
-        } else {
-            // e.g. a function call that returns a struct
-            return struct.isConcrete();
-        }
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -104,12 +104,16 @@ public class StructFieldAccess implements Expression {
             return false;
         }
         StructFieldAccess a = (StructFieldAccess) o;
-        return a.struct.equals(struct) && a.field.equals(field);
+        return a.scope.equals(scope) && a.struct.equals(struct) && a.field.equals(field);
     }
 
     @Override
     public int hashCode() {
-        return struct.hashCode() ^ field.hashCode();
+        int result = 17;
+        result += 31 * result + struct.hashCode();
+        result += 31 * result + field.hashCode();
+        result += 31 * result + scope.hashCode();
+        return result;
     }
 
     @Override

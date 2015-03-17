@@ -1,5 +1,8 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.MetaType;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -17,31 +20,37 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * this resolution step, a variable expression actually has an implicit wildcard type until its been resolved
  * to the correct value.
  *
- * Although structurally very similar to {@link com.lhkbob.fxsl.lang.ParameterExpression}, these two
- * reference expressions are semantically very different.
+ * Although structurally very similar to {@link ParameterExpression}, these two reference expressions are
+ * semantically very different.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public class VariableExpression implements Expression {
-    private final transient WildcardType type;
+    private final Type type;
     private final String name;
     private final Scope scope;
 
     /**
      * Create a new variable expression that is defined in `scope` and can be referenced by the given
-     * `name`. The variable's type will be a new wildcard type defined within the scope whose label is equal
-     * to the provided `name`.
+     * `name`. The variable's type will be a new anonymous wildcard type. This effectively makes variables
+     * assignable to any type until the actual variable has been de-referenced after parsing has completed.
      *
      * @param scope The scope that the variable is referenced (e.g. the current scope)
      * @param name  The name of the variable
      * @throws java.lang.NullPointerException if any argument is null
      */
     public VariableExpression(Scope scope, String name) {
+        this(scope, name, null);
+    }
+
+    public VariableExpression(Scope scope, String name, Type knownType) {
         notNull("name", name);
         notNull("scope", scope);
-        // FIXME what happens if a wildcard label has been created in the same scope with the exact same name?
-        this.type = new WildcardType(scope, name);
+        if (knownType == null) {
+            knownType = new MetaType(scope);
+        }
+        this.type = knownType;
         this.name = name;
         this.scope = scope;
     }
@@ -52,6 +61,7 @@ public class VariableExpression implements Expression {
      *
      * @return The scope  this variable was referenced within
      */
+    @Override
     public Scope getScope() {
         return scope;
     }
@@ -66,14 +76,8 @@ public class VariableExpression implements Expression {
     }
 
     @Override
-    public WildcardType getType() {
+    public Type getType() {
         return type;
-    }
-
-    @Override
-    public boolean isConcrete() {
-        // never concrete
-        return false;
     }
 
     @Override

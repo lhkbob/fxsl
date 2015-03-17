@@ -1,5 +1,7 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.*;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  *
  * Function calls are expressions that invoke another expression with a list of expressions to replace the
  * parameters of the invoked expression. Only certain expression types can be invoked, namely functions,
- * wildcards, and unions. See {@link com.lhkbob.fxsl.lang.UnionType} for details about how the specific
+ * wildcards, and unions. See {@link com.lhkbob.fxsl.lang.type.UnionType} for details about how the specific
  * function is selected in a union. Ignoring function recursion, a function call can be thought of as
  * replacing the call with the function return value with every parameter expression replaced by the supplied
  * argument values.
@@ -34,11 +36,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public class FunctionCall implements Expression {
-    /**
-     * The dependent access label used if the function expression being invoked is a wildcard type and the
-     * return type must be generated.
-     */
-    public static final String DEPENDENT_WILDCARD_LABEL = "function";
+    private final Scope scope;
 
     private final Expression expression;
     private final List<Expression> parameterValues;
@@ -54,6 +52,7 @@ public class FunctionCall implements Expression {
      * The invoked expression must have a function type, union type, or wildcard type. All invocations must
      * have at least one argument.
      *
+     * @param scope           The scope of the function call
      * @param expression      The expression to invoke
      * @param parameterValues The parameter values to invoke the function with
      * @throws java.lang.IllegalArgumentException if `expression` is not a function, union, or wildcard, if
@@ -62,21 +61,22 @@ public class FunctionCall implements Expression {
      * @throws java.lang.NullPointerException     if `expression` is null, or if `parameterValues` is null or
      *                                            contains null elements
      */
-    public FunctionCall(Expression expression, List<? extends Expression> parameterValues) {
+    public FunctionCall(Scope scope, Expression expression, List<? extends Expression> parameterValues) {
+        notNull("scope", scope);
         notNull("expression", expression);
         validCollection("parameterValues", parameterValues);
 
         if (!(expression.getType() instanceof UnionType) && !(expression.getType() instanceof FunctionType) &&
-            !(expression.getType() instanceof WildcardType)) {
+            !(expression.getType() instanceof MetaType)) {
             throw new IllegalArgumentException("Can only invoke function values, unions or wildcards, not: " +
                                                expression.getType());
         }
-
-        returnType = computeReturnType(expression, parameterValues);
+        returnType = computeReturnType(scope, expression, parameterValues);
         if (returnType == null) {
             throw new IllegalArgumentException("No matching function call for signature");
         }
 
+        this.scope = scope;
         this.expression = expression;
         this.parameterValues = Collections.unmodifiableList(new ArrayList<>(parameterValues));
     }
@@ -85,28 +85,28 @@ public class FunctionCall implements Expression {
      * Compute the return type of invoking the given function. This assumes the `function` is a valid type.
      * This will properly create a dependent wildcard type or curry the function as necessary.
      */
-    private static Type computeReturnType(Expression function, List<? extends Expression> args) {
-        if (function.getType() instanceof WildcardType) {
+    private static Type computeReturnType(Scope scope, Expression function, List<? extends Expression> args) {
+        if (function.getType() instanceof MetaType) {
             // the return type is a dependent wildcard type and argument list is irrelevant
-            return ((WildcardType) function.getType()).createDependentType(DEPENDENT_WILDCARD_LABEL);
+            return new MetaType(new Scope());
         } else if (function.getType() instanceof UnionType) {
             // if multiple options are assignable, we use a wildcard at this point
             // if one option is assignable, we use its return type
             Type matchedFunction = null;
             for (Type option : ((UnionType) function.getType()).getOptions()) {
-                if (option instanceof WildcardType || isSignatureValid((FunctionType) option, args)) {
+                if (option instanceof MetaType || isSignatureValid((FunctionType) option, args)) {
                     // default match
                     if (matchedFunction != null) {
                         // more than one match so make a wildcard
-                        return new WildcardType(new Scope(), "union");
+                        return new MetaType(scope);
                     } else {
                         matchedFunction = option;
                     }
                 }
             }
 
-            if (matchedFunction instanceof WildcardType) {
-                return ((WildcardType) matchedFunction).createDependentType(DEPENDENT_WILDCARD_LABEL);
+            if (matchedFunction instanceof MetaType) {
+                return new MetaType(scope);
             } else if (matchedFunction != null) {
                 return getReturnTypeOrCurriedFunction((FunctionType) matchedFunction, args);
             } else {
@@ -146,15 +146,24 @@ public class FunctionCall implements Expression {
      * Return true if the arguments are assignable to their matching parameter type and the number of
      * supplied arguments is at most the expected parameter count of the function (e.g. it may still be a
      * curried function invocation, but there won't be more arguments than expected).
+     *
+     * @param type The type of the function type to compare the argument list with
+     * @param args The provided argument list that is to be supplied to the function of `type`
+     * @return True if functions of `type` can be invoked with the provided parameter values
+     * @throws java.lang.IllegalArgumentException if `args` is empty
+     * @throws java.lang.NullPointerException     if `type` is null, if `args` is null or contains null elements
      */
-    private static boolean isSignatureValid(FunctionType type, List<? extends Expression> args) {
+    public static boolean isSignatureValid(FunctionType type, List<? extends Expression> args) {
+        notNull("type", type);
+        validCollection("args", args);
+
         if (args.size() > type.getParameterCount()) {
             // definitely incorrect signature if arg count is greater than what function expects
             return false;
         }
         for (int i = 0; i < args.size(); i++) {
             Type argType = type.getParameterType(i);
-            if (!argType.isAssignableFrom(args.get(i).getType())) {
+            if (!Types.isAssignable(argType, args.get(i).getType())) {
                 // signature is incompatible
                 return false;
             }
@@ -165,8 +174,8 @@ public class FunctionCall implements Expression {
 
     /**
      * Get the function expression that is invoked. The type of this expression is a {@link
-     * com.lhkbob.fxsl.lang.FunctionType}, {@link com.lhkbob.fxsl.lang.UnionType}, or {@link
-     * com.lhkbob.fxsl.lang.WildcardType}.
+     * com.lhkbob.fxsl.lang.type.FunctionType}, {@link com.lhkbob.fxsl.lang.type.UnionType}, or {@link
+     * MetaType}.
      *
      * @return The function being invoked
      */
@@ -223,16 +232,8 @@ public class FunctionCall implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        if (!expression.isConcrete()) {
-            return false;
-        }
-        for (Expression p : parameterValues) {
-            if (!p.isConcrete()) {
-                return false;
-            }
-        }
-        return true;
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -246,12 +247,16 @@ public class FunctionCall implements Expression {
             return false;
         }
         FunctionCall v = (FunctionCall) o;
-        return v.expression.equals(expression) && v.parameterValues.equals(parameterValues);
+        return v.scope.equals(scope) && v.expression.equals(expression) && v.parameterValues.equals(parameterValues);
     }
 
     @Override
     public int hashCode() {
-        return expression.hashCode() ^ parameterValues.hashCode();
+        int result = 17;
+        result += 31 * result + expression.hashCode();
+        result += 31 * result + parameterValues.hashCode();
+        result += 31 * result + scope.hashCode();
+        return result;
     }
 
     @Override

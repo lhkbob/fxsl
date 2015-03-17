@@ -1,5 +1,6 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -38,11 +39,6 @@ public class NativeExpression implements Expression {
     @Override
     public Type getType() {
         return type;
-    }
-
-    @Override
-    public boolean isConcrete() {
-        return true;
     }
 
     @Override

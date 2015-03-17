@@ -1,11 +1,16 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.ArrayType;
+import com.lhkbob.fxsl.lang.type.Type;
+import com.lhkbob.fxsl.lang.type.Types;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.lhkbob.fxsl.util.Preconditions.notNull;
 import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 
 /**
@@ -13,46 +18,46 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * ============
  *
  * Array values are constructor expressions that turn a list of compatibly-typed expressions into an array,
- * which is described in {@link com.lhkbob.fxsl.lang.ArrayType}. An array value's component type is the shared
- * type of all expressions. As arrays have finite lengths, most cases the array's elements can be written
- * directly in FXSL.
+ * which is described in {@link com.lhkbob.fxsl.lang.type.ArrayType}. An array value's component type is the
+ * union type of all expressions. As arrays have finite lengths, most cases the array's elements can be
+ * written directly in FXSL.
  *
  * However, a functional array constructor is also available that invokes a function to produce values for
  * each index. This constructor is also usable when the length of the array is an unknown dynamic variable.
  * FIXME implement this feature and determine its syntax.
  *
- * An array value is concrete if all element values are concrete.
- *
  * @author Michael Ludwig
  */
 @Immutable
 public class ArrayValue implements Expression {
-    private final transient ArrayType type;
+    private final Scope scope;
+    private final ArrayType type;
     private final List<Expression> elements;
 
     /**
      * Create a new array value with element values taken directly from the list `elements`. The list is
      * copied so modifications to `elements` after the constructor completes will not affect the array value.
-     * If the expressions do not have a sharable type then the array value type cannot be constructed.
      *
-     * @param elements The array elements
+     * @param scope         The scope the array value is constructed within
+     * @param componentType The type that all array elements are assignable to
+     * @param elements      The array elements
      * @throws java.lang.IllegalArgumentException if `elements` is null or its expressions' types are not
-     *                                            sharable
-     * @throws java.lang.NullPointerException     if `elements` is null or contains null elements
+     *                                            assignable to the component type
+     * @throws java.lang.NullPointerException     if `scope` or `componentType` are null, or `elements` is
+     *                                            null or contains null elements
      */
-    public ArrayValue(List<? extends Expression> elements) {
+    public ArrayValue(Scope scope, Type componentType, List<? extends Expression> elements) {
         validCollection("elements", elements);
+        notNull("componentType", componentType);
+        notNull("scope", scope);
 
-        // compute component class type of the array
-        Type componentType = elements.get(0).getType();
-        for (int i = 1; i < elements.size(); i++) {
-            Type t2 = elements.get(i).getType();
-            componentType = componentType.getSharedType(t2);
-            if (componentType == null) {
-                throw new IllegalArgumentException("Array elements do not have a unifiable component type");
+        for (Expression e: elements) {
+            if (!Types.isAssignable(componentType, e.getType())) {
+                throw new IllegalArgumentException("Expression not assignable to component type: " + e + " must be of type " + componentType);
             }
         }
 
+        this.scope = scope;
         this.type = new ArrayType(componentType, elements.size());
         this.elements = Collections.unmodifiableList(new ArrayList<>(elements));
     }
@@ -96,16 +101,8 @@ public class ArrayValue implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        if (!type.isConcrete()) {
-            return false;
-        }
-        for (Expression e : elements) {
-            if (!e.isConcrete()) {
-                return false;
-            }
-        }
-        return true;
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -119,12 +116,12 @@ public class ArrayValue implements Expression {
             return false;
         }
         ArrayValue v = (ArrayValue) o;
-        return v.elements.equals(elements);
+        return v.scope.equals(scope) && v.elements.equals(elements);
     }
 
     @Override
     public int hashCode() {
-        return elements.hashCode();
+        return elements.hashCode() ^ scope.hashCode();
     }
 
     @Override
@@ -132,7 +129,7 @@ public class ArrayValue implements Expression {
         StringBuilder sb = new StringBuilder();
         sb.append('[');
         boolean first = true;
-        for (Expression e: elements) {
+        for (Expression e : elements) {
             if (first) {
                 first = false;
             } else {

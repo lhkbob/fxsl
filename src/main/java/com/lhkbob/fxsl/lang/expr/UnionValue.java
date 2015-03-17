@@ -1,18 +1,24 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.FunctionType;
+import com.lhkbob.fxsl.lang.type.MetaType;
+import com.lhkbob.fxsl.lang.type.Type;
+import com.lhkbob.fxsl.lang.type.UnionType;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.lhkbob.fxsl.util.Preconditions.notNull;
 import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 
 /**
  * Union Values
  * ============
  *
- * Union values are expressions that form instances of {@link UnionType} within FXSL. In order for a  union
+ * Union values are expressions that form instances of {@link com.lhkbob.fxsl.lang.type.UnionType} within FXSL. In order for a  union
  * value expression to be valid, the expressions combined must have types that form a valid union type. Thus,
  * even if two different functions with the exact same signature or union'ed together, a compiler failure will
  * arise because there is only a single function type involved in the union. Not every instance of functions
@@ -25,13 +31,11 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * this may not be possible so this flattening does not preclude the presence of expressions that still have
  * union types in the set of function options.
  *
- * A union value is never concrete. The compiler must select a particular option and rewrite the expression
- * tree to transform a union function call to a concrete expression.
- *
  * @author Michael Ludwig
  */
 @Immutable
 public class UnionValue implements Expression {
+    private final Scope scope;
     private final Set<Expression> functions;
     private final transient UnionType type;
 
@@ -40,17 +44,19 @@ public class UnionValue implements Expression {
      * implicitly defined by the types of the function expressions. If the expression types produce an invalid
      * union type, the union value cannot be constructed.
      *
-     * Like {@link com.lhkbob.fxsl.lang.UnionType}, this flattens the `functions` set when any other
+     * Like {@link com.lhkbob.fxsl.lang.type.UnionType}, this flattens the `functions` set when any other
      * UnionValues are encountered. However, not every expression with a union type can be flattened if the
      * actual option expressions cannot be determined.
      *
+     * @param scope The scope within which the union is declared
      * @param functions The function options of the union
      * @throws java.lang.IllegalArgumentException if `functions` is empty or contains an expression that is
      *                                            not a union, function, or wildcard, or if the set of
      *                                            expressions forms an invalid union type
      * @throws java.lang.NullPointerException     if `functions` is null or contains null elements
      */
-    public UnionValue(Set<? extends Expression> functions) {
+    public UnionValue(Scope scope, Set<? extends Expression> functions) {
+        notNull("scope", scope);
         validCollection("functions", functions);
 
         Set<Type> types = new HashSet<>();
@@ -58,7 +64,7 @@ public class UnionValue implements Expression {
         for (Expression t : functions) {
             Type type = t.getType();
             if (!(type instanceof UnionType || type instanceof FunctionType ||
-                  type instanceof WildcardType)) {
+                  type instanceof MetaType)) {
                 throw new IllegalArgumentException("Functional union only supports functions, unions, and wildcards, not " +
                                                    type);
             } else if (t instanceof UnionValue) {
@@ -70,6 +76,7 @@ public class UnionValue implements Expression {
             types.add(t.getType());
         }
 
+        this.scope = scope;
         type = new UnionType(types);
         this.functions = Collections.unmodifiableSet(flattened);
     }
@@ -94,9 +101,8 @@ public class UnionValue implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        // never concrete
-        return false;
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -109,12 +115,13 @@ public class UnionValue implements Expression {
         if (!(o instanceof UnionValue)) {
             return false;
         }
-        return ((UnionValue) o).functions.equals(functions);
+        UnionValue v = (UnionValue) o;
+        return v.scope.equals(scope) && v.functions.equals(functions);
     }
 
     @Override
     public int hashCode() {
-        return functions.hashCode();
+        return functions.hashCode() ^ scope.hashCode();
     }
 
     @Override

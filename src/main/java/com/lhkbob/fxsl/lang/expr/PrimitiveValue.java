@@ -1,22 +1,29 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.PrimitiveType;
 import com.lhkbob.fxsl.util.Immutable;
 
 /**
  * Primitive Values
  * ================
  *
- * Primitive value expressions are constructors for instances of {@link com.lhkbob.fxsl.lang.PrimitiveType}.
- * FXSL does not allow the sampler primitive types from being constructed within FXSL. As such it is not
- * possible to have a primitive value constructor for values of that class of types. With this constraint,
- * PrimitiveValue represents float, int, and bool constants defined within FXSL code.
- *
- * A primitive value is always concrete.
+ * Primitive value expressions are constructors for instances of {@link
+ * com.lhkbob.fxsl.lang.type.PrimitiveType}. FXSL does not allow the sampler primitive types from being
+ * constructed within FXSL. As such it is not possible to have a primitive value constructor for values of
+ * that class of types. With this constraint, PrimitiveValue represents float, int, and bool constants defined
+ * within FXSL code.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public class PrimitiveValue implements Expression {
+    /**
+     * All primitives are defined within a special scope. This instance is returned by {@link
+     * com.lhkbob.fxsl.lang.type.PrimitiveType#getScope()} for all primitive values, regardless of their type.
+     */
+    public static final Scope PRIMITIVE_SCOPE = new Scope();
+
     private final Object value;
     private final transient PrimitiveType type;
 
@@ -70,9 +77,8 @@ public class PrimitiveValue implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        // always concrete
-        return true;
+    public Scope getScope() {
+        return PRIMITIVE_SCOPE;
     }
 
     @Override

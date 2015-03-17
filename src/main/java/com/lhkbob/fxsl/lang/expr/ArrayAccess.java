@@ -1,5 +1,10 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.ArrayType;
+import com.lhkbob.fxsl.lang.type.MetaType;
+import com.lhkbob.fxsl.lang.type.PrimitiveType;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -13,51 +18,47 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * expressions may be wildcards but doing so imposes the constraint that the wildcard instantiate to an array
  * or integer respectively.
  *
- * An array access is concrete if and only if the dependent array expression and index expression are
- * concrete.
- *
  * @author Michael Ludwig
  */
 @Immutable
 public class ArrayAccess implements Expression {
-    /**
-     * The dependent access label used if the array expression being accessed is a wildcard type and the
-     * component array type must be generated.
-     */
-    public static final String DEPENDENT_WILDCARD_LABEL = "array";
+    private final Scope scope;
 
     private final Expression array;
     private final Expression index;
 
-    private final transient Type componentType;
+    private final Type componentType;
 
     /**
      * Create a new array access expression that accesses `array` at the given `index`.
      *
+     * @param scope The scope the expression is defined in
      * @param array The expression evaluating to an array value
      * @param index The expression evaluating to the integer index to access
      * @throws java.lang.IllegalArgumentException if `array` is not an array or wildcard, or if `index` is not
      *                                            an int or wildcard
-     * @throws java.lang.NullPointerException     if `array` or `index` are null
+     * @throws java.lang.NullPointerException     if `scope`, `array`, or `index` are null
      */
-    public ArrayAccess(Expression array, Expression index) {
+    public ArrayAccess(Scope scope, Expression array, Expression index) {
+        notNull("scope", scope);
         notNull("array", array);
         notNull("index", index);
 
-        if (!index.getType().equals(PrimitiveType.INT) && !(index.getType() instanceof WildcardType)) {
+        if (!index.getType().equals(PrimitiveType.INT) && !(index.getType() instanceof MetaType)) {
             throw new IllegalArgumentException("Array index must evaluate to an int or wildcard, not " +
                                                index.getType());
         }
 
         if (array.getType() instanceof ArrayType) {
             componentType = ((ArrayType) array.getType()).getComponentType();
-        } else if (array.getType() instanceof WildcardType) {
+        } else if (array.getType() instanceof MetaType) {
             // the array being accessed is a wildcard, so the returned type is a new wildcard within the same scope
-            componentType = ((WildcardType) array.getType()).createDependentType(DEPENDENT_WILDCARD_LABEL);
+            componentType = new MetaType(scope);
         } else {
             throw new IllegalArgumentException("Array access must operate on arrays, not " + array.getType());
         }
 
+        this.scope = scope;
         this.array = array;
         this.index = index;
     }
@@ -89,8 +90,8 @@ public class ArrayAccess implements Expression {
     }
 
     @Override
-    public boolean isConcrete() {
-        return array.isConcrete() && index.isConcrete();
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -104,12 +105,16 @@ public class ArrayAccess implements Expression {
             return false;
         }
         ArrayAccess a = (ArrayAccess) o;
-        return a.array.equals(array) && a.index.equals(index);
+        return a.scope.equals(scope) && a.array.equals(array) && a.index.equals(index);
     }
 
     @Override
     public int hashCode() {
-        return array.hashCode() ^ index.hashCode();
+        int result = 17;
+        result += 31 * result + scope.hashCode();
+        result += 31 * result + array.hashCode();
+        result += 31 * result + index.hashCode();
+        return result;
     }
 
     @Override

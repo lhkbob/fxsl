@@ -1,5 +1,8 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.FunctionType;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.ArrayList;
@@ -18,15 +21,14 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * expression, but the `let ... in` syntax can be used in FXSL to compute multiple values based on the
  * parameters and form more complex expressions cleanly.
  *
- * A function value is concrete if its parameter types are concrete and its return value expression is
- * concrete.
- *
  * @author Michael Ludwig
  */
 @Immutable
 public class FunctionValue implements Expression {
+    private final Scope scope;
+
     private final FunctionType type;
-    private final List<String> parameterNames;
+    private final List<ParameterExpression> parameters;
     private final Expression returnValue;
 
     /**
@@ -35,42 +37,43 @@ public class FunctionValue implements Expression {
      * name and type of each parameter to the function. `returnValue` is the body of the function to be
      * invoked when the function is called.
      *
-     * The type of this expression is a {@link com.lhkbob.fxsl.lang.FunctionType} that is implicitly defined
+     * The type of this expression is a {@link com.lhkbob.fxsl.lang.type.FunctionType} that is implicitly defined
      * by `parameterTypes` and the type of `returnValue`.
      *
-     * @param parameterNames The names of every parameter to the function
-     * @param parameterTypes THe paired types of every parameter
-     * @param returnValue    The body of the function
+     * @param scope       The scope this function is defined within (not the body's scope)
+     * @param parameters  The parameter expressions accessible within the body's scope for this function
+     * @param returnValue The body of the function
      * @throws java.lang.IllegalArgumentException if the size of `parameterNames` is different from
      *                                            `parameterTypes`, or if either is empty
      * @throws java.lang.NullPointerException     if any argument is null or contains a null element
      */
-    public FunctionValue(List<String> parameterNames, List<? extends Type> parameterTypes,
-                         Expression returnValue) {
-        validCollection("parameterNames", parameterNames);
-        validCollection("parameterTypes", parameterTypes);
+    public FunctionValue(Scope scope, List<ParameterExpression> parameters, Expression returnValue) {
+        notNull("scope", scope);
+        validCollection("parameters", parameters);
         notNull("returnValue", returnValue);
 
-        if (parameterNames.size() != parameterTypes.size()) {
-            throw new IllegalArgumentException("Name and type lists must have equal size");
+        List<Type> parameterTypes = new ArrayList<>(parameters.size());
+        for (ParameterExpression p : parameters) {
+            parameterTypes.add(p.getType());
         }
 
         type = new FunctionType(parameterTypes, returnValue.getType());
-        this.parameterNames = Collections.unmodifiableList(new ArrayList<>(parameterNames));
+        this.parameters = Collections.unmodifiableList(new ArrayList<>(parameters));
         this.returnValue = returnValue;
+        this.scope = scope;
     }
 
     /**
-     * Get the declared name of the `index` parameter, where the first parameter has index 0. The index is
-     * the same as with parameter types in {@link com.lhkbob.fxsl.lang.FunctionType}.
+     * Get the declared parameter expression of the `index` parameter, where the first parameter has index
+     * 0.  The index is the same as with parameter types in {@link com.lhkbob.fxsl.lang.type.FunctionType}.
      *
      * @param index The parameter index to lookup
-     * @return The name associated with the parameter and usable as a parameter expression in the body
+     * @return The name expression with the parameter and usable as a variable in the body
      * @throws java.lang.IndexOutOfBoundsException if index is less than 0 or greater than
      *                                             `getType().getParameterCount() - 1`
      */
-    public String getParameterName(int index) {
-        return parameterNames.get(index);
+    public ParameterExpression getParameter(int index) {
+        return parameters.get(index);
     }
 
     /**
@@ -78,13 +81,13 @@ public class FunctionValue implements Expression {
      *
      * @return All parameter names of the function, ordered the same as how they were declared in FXSL
      */
-    public List<String> getParameterNames() {
-        return parameterNames;
+    public List<ParameterExpression> getParameters() {
+        return parameters;
     }
 
     /**
      * Get the expression that is evaluated each time the function is invoked. This expression can contain
-     * {@link com.lhkbob.fxsl.lang.ParameterExpression} referencing the parameters defined by this function
+     * {@link ParameterExpression} referencing the parameters defined by this function
      * value.
      *
      * @return The body of the function
@@ -93,14 +96,21 @@ public class FunctionValue implements Expression {
         return returnValue;
     }
 
+    /**
+     * @return The scope of the function body, which includes the parameter expression definitions.
+     */
+    public Scope getBodyScope() {
+        return returnValue.getScope();
+    }
+
     @Override
     public FunctionType getType() {
         return type;
     }
 
     @Override
-    public boolean isConcrete() {
-        return type.isConcrete() && returnValue.isConcrete();
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -114,7 +124,7 @@ public class FunctionValue implements Expression {
             return false;
         }
         FunctionValue v = (FunctionValue) o;
-        return v.type.equals(type) && v.parameterNames.equals(parameterNames) &&
+        return v.scope.equals(scope) && v.type.equals(type) && v.parameters.equals(parameters) &&
                v.returnValue.equals(returnValue);
     }
 
@@ -122,8 +132,9 @@ public class FunctionValue implements Expression {
     public int hashCode() {
         int result = 17;
         result += 31 * result + type.hashCode();
-        result += 31 * result + parameterNames.hashCode();
+        result += 31 * result + parameters.hashCode();
         result += 31 * result + returnValue.hashCode();
+        result += 31 * result + scope.hashCode();
         return result;
     }
 
@@ -135,7 +146,7 @@ public class FunctionValue implements Expression {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append(parameterNames.get(i)).append(':').append(type.getParameterType(i).toString());
+            sb.append(parameters.get(i)).append(':').append(type.getParameterType(i).toString());
         }
         sb.append(" -> ");
         sb.append(returnValue.toString());

@@ -1,5 +1,7 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
+import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -48,6 +50,7 @@ public class ParameterExpression implements Expression {
      *
      * @return The scope defining this parameter
      */
+    @Override
     public Scope getScope() {
         return scope;
     }
@@ -64,11 +67,6 @@ public class ParameterExpression implements Expression {
     @Override
     public Type getType() {
         return type;
-    }
-
-    @Override
-    public boolean isConcrete() {
-        return type.isConcrete();
     }
 
     @Override
