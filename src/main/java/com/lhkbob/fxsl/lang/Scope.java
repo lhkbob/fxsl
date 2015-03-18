@@ -1,7 +1,6 @@
 package com.lhkbob.fxsl.lang;
 
 import com.lhkbob.fxsl.util.Immutable;
-import com.lhkbob.fxsl.util.LogicalEquality;
 
 /**
  * Scopes
@@ -27,8 +26,18 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * @author Michael Ludwig
  */
 @Immutable
-@LogicalEquality
 public class Scope {
+    /**
+     * A special scope independent of any scope hierarchy that's part of a parsed program that contains
+     * all native-level language features.
+     */
+    public static final Scope NATIVE_SCOPE = new Scope();
+
+    /**
+     * A special scope, that's a child of {@link #NATIVE_SCOPE} that contains all primitive types and values.
+     */
+    public static final Scope PRIMITIVE_SCOPE = new Scope(NATIVE_SCOPE);
+
     private final Scope parent;
 
     /**

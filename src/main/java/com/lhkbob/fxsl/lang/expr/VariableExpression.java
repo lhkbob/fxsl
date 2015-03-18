@@ -26,7 +26,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 @Immutable
-public class VariableExpression implements Expression {
+public final class VariableExpression implements Expression {
     private final Type type;
     private final String name;
     private final Scope scope;

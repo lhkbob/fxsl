@@ -1,11 +1,13 @@
-package com.lhkbob.fxsl.lang;
+package com.lhkbob.fxsl.lang.type;
 
+import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.lhkbob.fxsl.util.Preconditions.notNull;
 import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 
 /**
@@ -33,30 +35,11 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * other functions that have fewer remaining parameters. This makes currying within a union only possible when
  * no other option matches with a smaller argument list.
  *
- * ## Assignability and shared types
- *
- * One union type can only be assigned to another union type if it contains an assignable option for each
- * option in the second type. The shared type between two unions is a new union made of valid shared types
- * between their options. The shared type between a union type and a function type is described in {@link
- * com.lhkbob.fxsl.lang.FunctionType}. Note that a function type cannot be assigned to a union type, only the
- * opposite direction is valid.
- *
- * Wildcards can still be assigned to unions, but impose a constraint upon the wildcard's instantiated type.
- * Similarly the shared type between a union and a wildcard is the union.
- *
- * ## Concreteness
- *
- * A union type is concrete if all of its function type options are concrete. This is different from the
- * expression concreteness of invoking a union, which is not concrete because a function must be selected to
- * be a concrete expression.
- *
  * @author Michael Ludwig
  */
 @Immutable
-public class UnionType implements Type {
-    private static final double BASE_COST = 20.0;
-    private static final double OPTION_COST = 3.0;
-
+public final class UnionType implements Type {
+    private final Scope scope;
     private final Set<Type> functions;
 
     /**
@@ -65,18 +48,20 @@ public class UnionType implements Type {
      * function options. If after this flattening occurs there are not two unique options the union type is
      * invalid and an exception is thrown.
      *
+     * @param scope     The scope the union was declared in
      * @param functions The function type options making up the union
      * @throws java.lang.IllegalArgumentException if `functions` references a type other than UnionType,
      *                                            FunctionType, and WildcardType, or if the net option size is
      *                                            less than 2.
      * @throws java.lang.NullPointerException     if `functions` is null or contains null elements
      */
-    public UnionType(Set<? extends Type> functions) {
+    public UnionType(Scope scope, Set<? extends Type> functions) {
+        notNull("scope", scope);
         validCollection("functions", functions);
 
         Set<Type> flattened = new HashSet<>();
         for (Type t : functions) {
-            if (!(t instanceof UnionType || t instanceof FunctionType || t instanceof WildcardType)) {
+            if (!(t instanceof UnionType || t instanceof FunctionType || t instanceof MetaType)) {
                 throw new IllegalArgumentException("Type union only supports function types, not: " + t);
             }
             if (t instanceof UnionType) {
@@ -89,6 +74,8 @@ public class UnionType implements Type {
         if (flattened.size() < 2) {
             throw new IllegalArgumentException("Union requires at least two unique types");
         }
+
+        this.scope = scope;
         this.functions = Collections.unmodifiableSet(flattened);
     }
 
@@ -103,87 +90,13 @@ public class UnionType implements Type {
     }
 
     @Override
-    public double getTypeComplexity() {
-        double complexity = BASE_COST;
-        for (Type o : functions) {
-            complexity += OPTION_COST + o.getTypeComplexity();
-        }
-        return complexity;
+    public <T> T accept(Type.Visitor<T> visitor) {
+        return visitor.visitUnionType(this);
     }
 
     @Override
-    public double getAssignmentCost(Type t) {
-        if (!isAssignableFrom(t)) {
-            return Double.POSITIVE_INFINITY;
-        } else if (t instanceof WildcardType) {
-            return getTypeComplexity();
-        } else {
-            UnionType other = (UnionType) t;
-            double cost = 0.0;
-
-            for (Type f : functions) {
-                cost += f.getAssignmentCost(other);
-            }
-
-            return cost;
-        }
-    }
-
-    @Override
-    public boolean isAssignableFrom(Type t) {
-        if (!(t instanceof UnionType)) {
-            // NOTE: a FunctionType can't be assigned to a UnionType, all options must be provided to be assignable
-            return t instanceof WildcardType;
-        }
-
-        UnionType otherType = (UnionType) t;
-        // every one of this type's options must have an option in other that is assignable to it
-        for (Type f : functions) {
-            if (!f.isAssignableFrom(otherType)) {
-                // no function option in other could be used as f
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean isConcrete() {
-        for (Type f : functions) {
-            if (!f.isConcrete()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public Type getSharedType(Type t) {
-        if (t instanceof UnionType || t instanceof FunctionType) {
-            // the valid conversion is the cross product of both option sets, with only valid conversions;
-            // since getSharedType is commutative the product is simpler to compute
-            Set<Type> conversion = new HashSet<>();
-            for (Type f : functions) {
-                Type c = f.getSharedType(t);
-                if (c != null) {
-                    conversion.add(c);
-                }
-            }
-            if (conversion.isEmpty()) {
-                // no useful overlap
-                return null;
-            } else if (conversion.size() == 1) {
-                // single intersection
-                return conversion.iterator().next();
-            } else {
-                return new UnionType(conversion);
-            }
-        } else if (t instanceof WildcardType) {
-            return this;
-        } else {
-            // incompatible types
-            return null;
-        }
+    public Scope getScope() {
+        return scope;
     }
 
     @Override
@@ -191,19 +104,20 @@ public class UnionType implements Type {
         if (!(o instanceof UnionType)) {
             return false;
         }
-        return functions.equals(((UnionType) o).functions);
+        UnionType t = (UnionType) o;
+        return t.scope.equals(scope) && t.functions.equals(functions);
     }
 
     @Override
     public int hashCode() {
-        return functions.hashCode();
+        return functions.hashCode() ^ scope.hashCode();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (Type o: functions) {
+        for (Type o : functions) {
             if (first) {
                 first = false;
             } else {

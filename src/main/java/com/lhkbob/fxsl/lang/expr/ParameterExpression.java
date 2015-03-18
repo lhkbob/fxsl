@@ -21,7 +21,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 @Immutable
-public class ParameterExpression implements Expression {
+public final class ParameterExpression implements Expression {
     private final Type type;
     private final String name;
     private final Scope scope;

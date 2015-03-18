@@ -17,13 +17,7 @@ import com.lhkbob.fxsl.util.Immutable;
  * @author Michael Ludwig
  */
 @Immutable
-public class PrimitiveValue implements Expression {
-    /**
-     * All primitives are defined within a special scope. This instance is returned by {@link
-     * com.lhkbob.fxsl.lang.type.PrimitiveType#getScope()} for all primitive values, regardless of their type.
-     */
-    public static final Scope PRIMITIVE_SCOPE = new Scope();
-
+public final class PrimitiveValue implements Expression {
     private final Object value;
     private final transient PrimitiveType type;
 
@@ -78,7 +72,7 @@ public class PrimitiveValue implements Expression {
 
     @Override
     public Scope getScope() {
-        return PRIMITIVE_SCOPE;
+        return Scope.PRIMITIVE_SCOPE;
     }
 
     @Override

@@ -35,7 +35,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * @author Michael Ludwig
  */
 @Immutable
-public class FunctionCall implements Expression {
+public final class FunctionCall implements Expression {
     private final Scope scope;
 
     private final Expression expression;
@@ -108,7 +108,7 @@ public class FunctionCall implements Expression {
             if (matchedFunction instanceof MetaType) {
                 return new MetaType(scope);
             } else if (matchedFunction != null) {
-                return getReturnTypeOrCurriedFunction((FunctionType) matchedFunction, args);
+                return getReturnTypeOrCurriedFunction(scope, (FunctionType) matchedFunction, args);
             } else {
                 // the union cannot be invoked with the provided arguments
                 return null;
@@ -116,7 +116,7 @@ public class FunctionCall implements Expression {
         } else {
             FunctionType funcType = (FunctionType) function.getType();
             if (isSignatureValid(funcType, args)) {
-                return getReturnTypeOrCurriedFunction(funcType, args);
+                return getReturnTypeOrCurriedFunction(scope, funcType, args);
             } else {
                 // function cannot be invoked with provided arguments
                 return null;
@@ -128,7 +128,7 @@ public class FunctionCall implements Expression {
      * Return either the function's return type or the appropriate remaining function after currying the
      * given arguments. It can be assumed the arguments are assignable to the function's parameters.
      */
-    private static Type getReturnTypeOrCurriedFunction(FunctionType type, List<? extends Expression> args) {
+    private static Type getReturnTypeOrCurriedFunction(Scope scope, FunctionType type, List<? extends Expression> args) {
         if (args.size() == type.getParameterCount()) {
             // invoke the function so the type is the function's return type
             return type.getReturnType();
@@ -138,7 +138,7 @@ public class FunctionCall implements Expression {
             for (int i = args.size(); i < type.getParameterCount(); i++) {
                 signature.add(type.getParameterType(i));
             }
-            return new FunctionType(signature, type.getReturnType());
+            return new FunctionType(scope, signature, type.getReturnType());
         }
     }
 

@@ -24,7 +24,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * @author Michael Ludwig
  */
 @Immutable
-public class FunctionValue implements Expression {
+public final class FunctionValue implements Expression {
     private final Scope scope;
 
     private final FunctionType type;
@@ -57,7 +57,7 @@ public class FunctionValue implements Expression {
             parameterTypes.add(p.getType());
         }
 
-        type = new FunctionType(parameterTypes, returnValue.getType());
+        type = new FunctionType(scope, parameterTypes, returnValue.getType());
         this.parameters = Collections.unmodifiableList(new ArrayList<>(parameters));
         this.returnValue = returnValue;
         this.scope = scope;

@@ -22,7 +22,7 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * @author Michael Ludwig
  */
 @Immutable
-public class StructValue implements Expression {
+public final class StructValue implements Expression {
     private final Scope scope;
     private final Map<String, Expression> fields;
     private final transient StructType type;

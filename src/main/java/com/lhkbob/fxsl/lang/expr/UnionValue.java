@@ -34,7 +34,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * @author Michael Ludwig
  */
 @Immutable
-public class UnionValue implements Expression {
+public final class UnionValue implements Expression {
     private final Scope scope;
     private final Set<Expression> functions;
     private final transient UnionType type;

@@ -1,5 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
@@ -22,7 +23,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 @Immutable
-public class NativeExpression implements Expression {
+public final class NativeExpression implements Expression {
     private final Type type;
 
     /**
@@ -39,6 +40,11 @@ public class NativeExpression implements Expression {
     @Override
     public Type getType() {
         return type;
+    }
+
+    @Override
+    public Scope getScope() {
+        return Scope.NATIVE_SCOPE;
     }
 
     @Override

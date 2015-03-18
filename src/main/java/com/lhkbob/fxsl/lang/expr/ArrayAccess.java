@@ -21,7 +21,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 @Immutable
-public class ArrayAccess implements Expression {
+public final class ArrayAccess implements Expression {
     private final Scope scope;
 
     private final Expression array;

@@ -29,7 +29,7 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * @author Michael Ludwig
  */
 @Immutable
-public class ArrayValue implements Expression {
+public final class ArrayValue implements Expression {
     private final Scope scope;
     private final ArrayType type;
     private final List<Expression> elements;

@@ -19,7 +19,7 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * @author Michael Ludwig
  */
 @Immutable
-public class StructFieldAccess implements Expression {
+public final class StructFieldAccess implements Expression {
     private final Scope scope;
     private final Expression struct;
     private final String field;

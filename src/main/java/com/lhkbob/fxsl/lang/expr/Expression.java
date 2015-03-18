@@ -61,6 +61,11 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * invoking the actual function body it returns a new function value that has a parameter list consisting of
  * the remaining parameters that must be specified.
  *
+ * ### Implementation note
+ *
+ * Expression subclasses should be immutable, provide logical implementations of equals() and hashCode(), and
+ * will throw exceptions if `null` values are provided.
+ *
  * @author Michael Ludwig
  */
 @LogicalEquality(def = "Two expressions are equal if they are the same category of expression, have equal " +
@@ -68,10 +73,7 @@ import com.lhkbob.fxsl.util.LogicalEquality;
                        " within the same scope")
 public interface Expression {
     /**
-     * The Expression Visitor provides the visitor pattern for walking parsed expression trees. The visitor
-     * pattern is used for expressions because many more complex operations and edits to the expression graph
-     * must be made. This is in comparison to the methods provided in Type, which can be more conveniently
-     * implemented per type class.
+     * The Expression Visitor provides the visitor pattern for walking parsed expression trees.
      *
      * @param <T> The class type that a visitor returns (generally an Expression)
      */
