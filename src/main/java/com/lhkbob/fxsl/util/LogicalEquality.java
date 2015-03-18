@@ -16,4 +16,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface LogicalEquality {
+    /**
+     * @return Developer consumable explanation of what defines logical equality for the type.
+     */
+    String def() default "";
 }
