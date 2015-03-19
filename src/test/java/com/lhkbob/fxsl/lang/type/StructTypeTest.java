@@ -110,4 +110,52 @@ public class StructTypeTest {
     public void testConstructorScopeNull() {
         makeType(null, Arrays.asList("f"), Arrays.asList(PrimitiveType.INT));
     }
+
+    @Test
+    public void testAccept() {
+        StructType t1 = makeType(new Scope(), Arrays.asList("a", "b"),
+                                 Arrays.asList(PrimitiveType.FLOAT, PrimitiveType.BOOL));
+        StructType t2 = t1.accept(new Type.Visitor<StructType>() {
+            @Override
+            public StructType visitArrayType(ArrayType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitFunctionType(FunctionType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitMetaType(MetaType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitAliasType(AliasType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public StructType visitStructType(StructType t) {
+                return t;
+            }
+
+            @Override
+            public StructType visitUnionType(UnionType t) {
+                return null;
+            }
+        });
+        assertEquals(t1, t2);
+    }
 }

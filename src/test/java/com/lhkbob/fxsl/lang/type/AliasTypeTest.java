@@ -28,6 +28,53 @@ public class AliasTypeTest {
     }
 
     @Test
+    public void testAccept() {
+        AliasType t = new AliasType(new Scope(), "a");
+        AliasType t2 = t.accept(new Type.Visitor<AliasType>() {
+            @Override
+            public AliasType visitArrayType(ArrayType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitFunctionType(FunctionType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitMetaType(MetaType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitAliasType(AliasType t) {
+                return t;
+            }
+
+            @Override
+            public AliasType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitStructType(StructType t) {
+                return null;
+            }
+
+            @Override
+            public AliasType visitUnionType(UnionType t) {
+                return null;
+            }
+        });
+        assertEquals(t, t2);
+    }
+
+    @Test
     public void testGetScope() {
         Scope scope = new Scope();
         AliasType t = new AliasType(scope, "a");

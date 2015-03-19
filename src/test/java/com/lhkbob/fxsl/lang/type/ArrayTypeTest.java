@@ -128,4 +128,51 @@ public class ArrayTypeTest {
         assertNull(t1.getWildcardLength());
         assertEquals(new ParameterExpression(scope, "a", PrimitiveType.INT), t2.getWildcardLength());
     }
+
+    @Test
+    public void testAccept() {
+        ArrayType t1 = new ArrayType(new Scope(), PrimitiveType.INT, 1);
+        ArrayType t2 = t1.accept(new Type.Visitor<ArrayType>() {
+            @Override
+            public ArrayType visitArrayType(ArrayType t) {
+                return t;
+            }
+
+            @Override
+            public ArrayType visitFunctionType(FunctionType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitMetaType(MetaType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitAliasType(AliasType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitStructType(StructType t) {
+                return null;
+            }
+
+            @Override
+            public ArrayType visitUnionType(UnionType t) {
+                return null;
+            }
+        });
+        assertEquals(t1, t2);
+    }
 }

@@ -3,8 +3,7 @@ package com.lhkbob.fxsl.lang.type;
 import com.lhkbob.fxsl.lang.Scope;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link com.lhkbob.fxsl.lang.type.MetaType}.
@@ -33,5 +32,52 @@ public class MetaTypeTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
         new MetaType(null);
+    }
+
+    @Test
+    public void testAccept() {
+        MetaType t1 = new MetaType(new Scope());
+        MetaType t2 = t1.accept(new Type.Visitor<MetaType>() {
+            @Override
+            public MetaType visitArrayType(ArrayType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitFunctionType(FunctionType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitMetaType(MetaType t) {
+                return t;
+            }
+
+            @Override
+            public MetaType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitAliasType(AliasType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitStructType(StructType t) {
+                return null;
+            }
+
+            @Override
+            public MetaType visitUnionType(UnionType t) {
+                return null;
+            }
+        });
+        assertEquals(t1, t2);
     }
 }

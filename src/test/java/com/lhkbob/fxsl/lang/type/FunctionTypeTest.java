@@ -97,4 +97,51 @@ public class FunctionTypeTest {
     public void testConstructorNullScope() {
         makeType(null, PrimitiveType.INT, PrimitiveType.INT);
     }
+
+    @Test
+    public void testAccept() {
+        FunctionType t1 = makeType(new Scope(), PrimitiveType.BOOL, PrimitiveType.INT);
+        FunctionType t2 = t1.accept(new Type.Visitor<FunctionType>() {
+            @Override
+            public FunctionType visitArrayType(ArrayType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitFunctionType(FunctionType t) {
+                return t;
+            }
+
+            @Override
+            public FunctionType visitMetaType(MetaType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitAliasType(AliasType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitStructType(StructType t) {
+                return null;
+            }
+
+            @Override
+            public FunctionType visitUnionType(UnionType t) {
+                return null;
+            }
+        });
+        assertEquals(t1, t2);
+    }
 }

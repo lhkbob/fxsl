@@ -3,7 +3,8 @@ package com.lhkbob.fxsl.lang.type;
 import com.lhkbob.fxsl.lang.Scope;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Verify the behavior of {@link com.lhkbob.fxsl.lang.type.PrimitiveType}.
@@ -90,8 +91,6 @@ public class PrimitiveTypeTest {
                 return null;
             }
         });
-
-        assertNotNull(t);
         assertEquals(t, type);
     }
 }

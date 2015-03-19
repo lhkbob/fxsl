@@ -102,4 +102,56 @@ public class UnionTypeTest {
         makeType(null, FunctionTypeTest.makeType(new Scope(), PrimitiveType.INT, PrimitiveType.INT),
                  FunctionTypeTest.makeType(new Scope(), PrimitiveType.FLOAT, PrimitiveType.BOOL));
     }
+
+    @Test
+    public void testAccept() {
+        Scope s = new Scope();
+        UnionType t1 = makeType(s, FunctionTypeTest.makeType(s, PrimitiveType.INT, PrimitiveType.INT),
+                                FunctionTypeTest.makeType(s, PrimitiveType.FLOAT, PrimitiveType.BOOL),
+                                FunctionTypeTest
+                                        .makeType(s, PrimitiveType.SAMPLER1D, PrimitiveType.SAMPLER1D));
+
+        UnionType t2 = t1.accept(new Type.Visitor<UnionType>() {
+            @Override
+            public UnionType visitArrayType(ArrayType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitFunctionType(FunctionType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitMetaType(MetaType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitParametricType(ParametricType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitAliasType(AliasType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitPrimitiveType(PrimitiveType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitStructType(StructType t) {
+                return null;
+            }
+
+            @Override
+            public UnionType visitUnionType(UnionType t) {
+                return t;
+            }
+        });
+        assertEquals(t1, t2);
+    }
 }
