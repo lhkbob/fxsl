@@ -3,76 +3,57 @@
 // All capitals = simple token / symbol / keyword
 grammar FXSL;
 
+// FIXME needs rules for the functional array constructor and for uniform and attribute value constructors
+
 // ** Parser rules **
 
-typeKeyValue : Identifier COLON typeRef;
+typeKeyValue : Identifier COLON type;
 exprKeyValue : Identifier COLON expr;
 optTypeKeyValue : Identifier
                 | typeKeyValue;
+arrayLength : Integer
+            | Identifier;
 
-// Type declarations and references
-// FIXME add wildcard types
+type : LPAREN params+=type (COMMA params+=type)* DECLARE returnType=type RPAREN #FunctionType
+     | type LBRACK arrayLength RBRACK #ArrayType
+     | LBRACE typeKeyValue (COMMA typeKeyValue)* RBRACE #StructType
+     | type (BITOR type)+ #UnionType // can only hold functional types to represent ad-hoc polymorphism
+     | Identifier #AliasType
+     | LPAREN type RPAREN #GroupedType;
 
-typeRef : baseTypeRef DECLARE typeRef
-        | LPAREN baseTypeRef (COMMA typeRef)* RPAREN DECLARE typeRef
-        | baseTypeRef LBRACK Integer RBRACK
-        | baseTypeRef;
-
-baseTypeRef : LBRACE typeKeyValue (COMMA typeKeyValue)* RBRACE
-            | Identifier
-            | LPAREN typeRef RPAREN;
-
-typeConstr : Boolean
-           | Integer
-           | Float
-           | LBRACK expr (COMMA expr)* RBRACK
-           | LBRACE exprKeyValue (COMMA exprKeyValue)* RBRACE
-           | optTypeKeyValue DECLARE expr
-           | LPAREN optTypeKeyValue (COMMA optTypeKeyValue)* RPAREN DECLARE expr;
+ctor : LPAREN params+=optTypeKeyValue (COMMA params+=optTypeKeyValue)* DECLARE returnExpr=expr RPAREN #Function
+     | LBRACK expr (COMMA expr)* RBRACK #Array
+     | LBRACE exprKeyValue (COMMA exprKeyValue)* RBRACE #Struct
+     | (Boolean | Integer | Float) #Primitive;
 
 // Definitions
 
-baseDef : optTypeKeyValue ASSIGN expr;
-typeDef : TYPE Identifier ASSIGN typeRef;
-varDef : DEF baseDef;
+def : TYPE Identifier ASSIGN type #TypeDef
+    | VAR optTypeKeyValue ASSIGN expr #VarDef;
+defList : def (SEMI def)*;
 
 // Expressions
 
-binaryOpLeft : GT
-             | LT
-             | GE
-             | LE
-             | EQUAL
-             | NOTEQUAL
-             | AND
-             | OR
-             | BITAND
-             | BITOR
-             | TILDE // FIXME does glsl support bit ops and if so, do they include bit inverse?
-             | ADD
-             | SUB
-             | MUL
-             | DIV
-             | MOD;
-expr : expr binaryOpLeft expr
-     | <assoc=right>expr CARET expr
-     | BANG expr
-     | SUB expr
-     | expr LPAREN expr (COMMA expr)* RPAREN // functions always have at least one parameter
-     | expr LBRACK expr RBRACK
-     | LET declList IN expr
-     | typeConstr
-     | Identifier
-     | LPAREN expr RPAREN;
-
-declList : baseDef (SEMI baseDef)*;
+expr : func=expr LPAREN params+=expr (COMMA params+=expr)* RPAREN #FunctionCall
+     | value=expr LBRACK field=expr RBRACK #FieldAccess // also array access
+     | <assoc=right>left=expr op=POW right=expr #BinaryExpression
+     | op=(BANG|SUB|TILDE) expr #UnaryExpression
+     | left=expr op=(MUL|DIV|MOD) right=expr #BinaryExpression
+     | left=expr op=(ADD|SUB) right=expr #BinaryExpression
+     | left=expr op=(BITAND|BITOR|BITXOR) right=expr #BinaryExpression
+     | left=expr op=(AND|OR) right=expr #BinaryExpression
+     | left=expr op=(EQUAL|NOTEQUAL|GT|LT|GE|LE) right=expr #BinaryExpression
+     | left=expr op=Identifier right=expr #BinaryExpression
+     | LET defList IN expr #Let
+     | Identifier #Variable
+     | ctor #Value
+     | LPAREN expr RPAREN #GroupedExpression;
 
 // Shader unit
 
 stm : expr
-    | typeDef
-    | varDef;
-stmList : (stm SEMI)+;
+    | def;
+stmList : stm (SEMI stm)* SEMI?;
 
 // ** Lexer Rules **
 
@@ -107,16 +88,17 @@ MUL             : '*';
 DIV             : '/';
 BITAND          : '&';
 BITOR           : '|';
-CARET           : '^';
+BITXOR          : '^';
 MOD             : '%';
 DECLARE         : '->';
+POW             : '*^';
 
 // Keywords
 
 TYPE : 'type';
 LET : 'let';
 IN : 'in';
-DEF : 'def';
+VAR : 'var';
 
 // Primitive types
 
@@ -127,9 +109,7 @@ fragment Digit : [0-9];
 
 fragment Digits : Digit+;
 
-fragment UnsignedSuffix : [uU];
-
-Integer : Digits UnsignedSuffix?;
+Integer : Digits;
 
 fragment ExponentSign : ADD | SUB;
 
