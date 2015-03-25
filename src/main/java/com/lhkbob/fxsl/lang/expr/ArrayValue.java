@@ -58,7 +58,7 @@ public final class ArrayValue implements Expression {
         }
 
         this.scope = scope;
-        this.type = new ArrayType(componentType, elements.size());
+        this.type = new ArrayType(scope, componentType, elements.size());
         this.elements = Collections.unmodifiableList(new ArrayList<>(elements));
     }
 
