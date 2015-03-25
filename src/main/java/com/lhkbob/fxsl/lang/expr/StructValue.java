@@ -53,7 +53,7 @@ public final class StructValue implements Expression {
             fieldTypes.put(e.getKey(), e.getValue().getType());
         }
         this.scope = scope;
-        type = new StructType(fieldTypes);
+        type = new StructType(scope, fieldTypes);
         this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
     }
 

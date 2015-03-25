@@ -77,7 +77,7 @@ public final class UnionValue implements Expression {
         }
 
         this.scope = scope;
-        type = new UnionType(types);
+        type = new UnionType(scope, types);
         this.functions = Collections.unmodifiableSet(flattened);
     }
 

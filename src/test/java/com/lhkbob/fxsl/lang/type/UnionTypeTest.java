@@ -97,7 +97,7 @@ public class UnionTypeTest {
         new UnionType(new Scope(), new HashSet<>(Arrays.asList(null, PrimitiveType.INT)));
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
         makeType(null, FunctionTypeTest.makeType(new Scope(), PrimitiveType.INT, PrimitiveType.INT),
                  FunctionTypeTest.makeType(new Scope(), PrimitiveType.FLOAT, PrimitiveType.BOOL));

@@ -59,7 +59,7 @@ public class FunctionCallTest {
                                                      Arrays.asList(new ParameterExpression(new Scope(), "a",
                                                                                            PrimitiveType.BOOL)),
                                                      new PrimitiveValue(2.0f));
-        UnionValue function = UnionValueTest.makeValue(matched, notMatched);
+        UnionValue function = UnionValueTest.makeValue(new Scope(), matched, notMatched);
         FunctionCall call = new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1)));
 
         assertEquals(PrimitiveType.INT, call.getType());
@@ -79,7 +79,7 @@ public class FunctionCallTest {
                                                      Arrays.asList(new ParameterExpression(new Scope(), "a",
                                                                                            PrimitiveType.BOOL)),
                                                      new PrimitiveValue(2.0f));
-        UnionValue function = UnionValueTest.makeValue(matched, notMatched);
+        UnionValue function = UnionValueTest.makeValue(new Scope(), matched, notMatched);
         FunctionCall call = new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1)));
 
         assertEquals(function, call.getFunction());
@@ -177,7 +177,7 @@ public class FunctionCallTest {
         new FunctionCall(new Scope(), function, Collections.<Expression>emptyList());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
         FunctionValue function = new FunctionValue(new Scope(),
                                                    Arrays.asList(new ParameterExpression(new Scope(), "a",
