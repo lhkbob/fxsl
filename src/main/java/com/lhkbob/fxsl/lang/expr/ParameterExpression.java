@@ -14,7 +14,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * If a function is inlined the parameter expression may be replaced with the actual parameter expression.
  * Otherwise they dynamically represent the parameter expressions their owning function is invoked with.
  * Because parameters only exist in the declaration of a function value, parameter expressions are only seen
- * referenced in expressions used as function bodies.
+ * referenced in expressions used as function bodies. This is the expression analog of a {@link
+ * com.lhkbob.fxsl.lang.type.ParametricType}.
  *
  * A parameter expression is concrete if its type is concrete.
  *
@@ -64,7 +65,7 @@ public final class ParameterExpression implements Expression {
         return name;
     }
 
-    @Override
+    // FIXME do we want this for parameter expressions?
     public Type getType() {
         return type;
     }

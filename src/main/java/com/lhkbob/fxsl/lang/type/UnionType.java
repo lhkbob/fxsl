@@ -1,13 +1,11 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.lhkbob.fxsl.util.Preconditions.notNull;
 import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 
 /**
@@ -39,7 +37,6 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public final class UnionType implements Type {
-    private final Scope scope;
     private final Set<Type> functions;
 
     /**
@@ -48,15 +45,13 @@ public final class UnionType implements Type {
      * function options. If after this flattening occurs there are not two unique options the union type is
      * invalid and an exception is thrown.
      *
-     * @param scope     The scope the union was declared in
      * @param functions The function type options making up the union
      * @throws java.lang.IllegalArgumentException if `functions` references a type other than UnionType,
      *                                            FunctionType, and WildcardType, or if the net option size is
      *                                            less than 2.
      * @throws java.lang.NullPointerException     if `functions` is null or contains null elements
      */
-    public UnionType(Scope scope, Set<? extends Type> functions) {
-        notNull("scope", scope);
+    public UnionType(Set<? extends Type> functions) {
         validCollection("functions", functions);
 
         Set<Type> flattened = new HashSet<>();
@@ -75,7 +70,6 @@ public final class UnionType implements Type {
             throw new IllegalArgumentException("Union requires at least two unique types");
         }
 
-        this.scope = scope;
         this.functions = Collections.unmodifiableSet(flattened);
     }
 
@@ -95,22 +89,17 @@ public final class UnionType implements Type {
     }
 
     @Override
-    public Scope getScope() {
-        return scope;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (!(o instanceof UnionType)) {
             return false;
         }
         UnionType t = (UnionType) o;
-        return t.scope.equals(scope) && t.functions.equals(functions);
+        return t.functions.equals(functions);
     }
 
     @Override
     public int hashCode() {
-        return functions.hashCode() ^ scope.hashCode();
+        return functions.hashCode();
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
 /**
@@ -65,11 +64,6 @@ public enum PrimitiveType implements Type {
     @Override
     public <T> T accept(Type.Visitor<T> visitor) {
         return visitor.visitPrimitiveType(this);
-    }
-
-    @Override
-    public Scope getScope() {
-        return Scope.PRIMITIVE_SCOPE;
     }
 
     @Override

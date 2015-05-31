@@ -1,8 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.type.MetaType;
-import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -21,13 +19,12 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * to the correct value.
  *
  * Although structurally very similar to {@link ParameterExpression}, these two reference expressions are
- * semantically very different.
+ * semantically very different. This is the expression analog of {@link com.lhkbob.fxsl.lang.type.AliasType}.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public final class VariableExpression implements Expression {
-    private final Type type;
     private final String name;
     private final Scope scope;
 
@@ -41,16 +38,9 @@ public final class VariableExpression implements Expression {
      * @throws java.lang.NullPointerException if any argument is null
      */
     public VariableExpression(Scope scope, String name) {
-        this(scope, name, null);
-    }
-
-    public VariableExpression(Scope scope, String name, Type knownType) {
         notNull("name", name);
         notNull("scope", scope);
-        if (knownType == null) {
-            knownType = new MetaType(scope);
-        }
-        this.type = knownType;
+
         this.name = name;
         this.scope = scope;
     }
@@ -73,11 +63,6 @@ public final class VariableExpression implements Expression {
      */
     public String getVariableName() {
         return name;
-    }
-
-    @Override
-    public Type getType() {
-        return type;
     }
 
     @Override

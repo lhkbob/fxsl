@@ -1,6 +1,5 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.lang.expr.ParameterExpression;
 import com.lhkbob.fxsl.util.Immutable;
 
@@ -20,51 +19,45 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  * The length of an array must either be an integer primitive, or an identifier. If an identifier is used,
  * the array type has a wildcard length and the specified identifier declares an implicit parameter of type
  * int that is replaced with any array instance's length when used, which exists in the same scope as the
- * defined array type. Arrays with explicit lengths must have a length greater than or equal to one.
+ * defined array type. Arrays with explicit lengths must have a length greater than or equal to one. Arrays
+ * with wildcard lengths can only be declared as the type of function parameters: the length identifier is
+ * treated as if it were another argument to the function when it's invoked.
  *
  * @author Michael Ludwig
  */
 @Immutable
 public final class ArrayType implements Type {
-    private final Scope scope;
     private final Type componentType;
-    private final Integer constantLength;
+    private final int constantLength;
     private final ParameterExpression wildcardLength;
 
     /**
      * Construct a new ArrayType with an explicit length. The length must be at least 1.
      *
-     * @param scope         The scope the array type is declared in
      * @param componentType The component type of the array
      * @param length        The explicit length of the array
      * @throws java.lang.IllegalArgumentException if `length` is less than 1
      * @throws java.lang.NullPointerException     if `componentType` is null
      */
-    public ArrayType(Scope scope, Type componentType, int length) {
-        this(scope, componentType, length, null);
+    public ArrayType(Type componentType, int length) {
+        this(componentType, length, null);
     }
 
     /**
      * Construct a new ArrayType with a wildcard length. The expression `length` is
      * the variable used to refer to the array length before its made concrete.
      *
-     * @param scope         The scope the array type is declared in
      * @param componentType The component type of the array
      * @param length        The wildcard length variable for the array
      * @throws java.lang.IllegalArgumentException if the type of `length` is not `INT`
      * @throws java.lang.NullPointerException     if `length` or `componentType` are null
      */
-    public ArrayType(Scope scope, Type componentType, ParameterExpression length) {
-        this(scope, componentType, null, length);
+    public ArrayType(Type componentType, ParameterExpression length) {
+        this(componentType, -1, length);
     }
 
-    private ArrayType(Scope scope, Type componentType, Integer constantLength,
-                      ParameterExpression wildcardLength) {
-        notNull("scope", scope);
+    private ArrayType(Type componentType, int constantLength, ParameterExpression wildcardLength) {
         notNull("componentType", componentType);
-        if (constantLength == null && wildcardLength == null) {
-            throw new NullPointerException("Length cannot be null");
-        }
         if (wildcardLength != null) {
             if (wildcardLength.getType() != PrimitiveType.INT) {
                 throw new IllegalArgumentException("Wildcard length expression must be of type INT, not: " +
@@ -77,7 +70,6 @@ public final class ArrayType implements Type {
             }
         }
 
-        this.scope = scope;
         this.componentType = componentType;
         this.constantLength = constantLength;
         this.wildcardLength = wildcardLength;
@@ -97,11 +89,7 @@ public final class ArrayType implements Type {
      * @return The concrete or explicit length this array was declared with
      */
     public int getConcreteLength() {
-        if (constantLength != null) {
-            return constantLength;
-        } else {
-            return -1;
-        }
+        return constantLength;
     }
 
     /**
@@ -120,21 +108,16 @@ public final class ArrayType implements Type {
     }
 
     @Override
-    public Scope getScope() {
-        return scope;
-    }
-
-    @Override
     public boolean equals(Object t) {
         if (!(t instanceof ArrayType)) {
             return false;
         }
         ArrayType a = (ArrayType) t;
-        if (a.scope.equals(scope) && a.componentType.equals(componentType)) {
-            if (constantLength != null) {
-                return constantLength.equals(a.constantLength);
-            } else {
+        if (a.componentType.equals(componentType)) {
+            if (wildcardLength != null) {
                 return wildcardLength.equals(a.wildcardLength);
+            } else {
+                return constantLength == a.constantLength;
             }
         } else {
             return false;
@@ -145,12 +128,11 @@ public final class ArrayType implements Type {
     public int hashCode() {
         int hash = 17;
         hash += hash * 37 + componentType.hashCode();
-        if (constantLength != null) {
-            hash += hash * 37 + constantLength.hashCode();
+        if (wildcardLength == null) {
+            hash += hash * 37 + constantLength;
         } else {
             hash += hash * 37 + wildcardLength.hashCode();
         }
-        hash += hash * 37 + scope.hashCode();
         return hash;
     }
 

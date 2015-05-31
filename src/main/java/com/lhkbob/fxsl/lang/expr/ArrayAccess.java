@@ -1,10 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.type.ArrayType;
-import com.lhkbob.fxsl.lang.type.MetaType;
-import com.lhkbob.fxsl.lang.type.PrimitiveType;
-import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import static com.lhkbob.fxsl.util.Preconditions.notNull;
@@ -27,36 +23,18 @@ public final class ArrayAccess implements Expression {
     private final Expression array;
     private final Expression index;
 
-    private final Type componentType;
-
     /**
      * Create a new array access expression that accesses `array` at the given `index`.
      *
      * @param scope The scope the expression is defined in
      * @param array The expression evaluating to an array value
      * @param index The expression evaluating to the integer index to access
-     * @throws java.lang.IllegalArgumentException if `array` is not an array or wildcard, or if `index` is not
-     *                                            an int or wildcard
      * @throws java.lang.NullPointerException     if `scope`, `array`, or `index` are null
      */
     public ArrayAccess(Scope scope, Expression array, Expression index) {
         notNull("scope", scope);
         notNull("array", array);
         notNull("index", index);
-
-        if (!index.getType().equals(PrimitiveType.INT) && !(index.getType() instanceof MetaType)) {
-            throw new IllegalArgumentException("Array index must evaluate to an int or wildcard, not " +
-                                               index.getType());
-        }
-
-        if (array.getType() instanceof ArrayType) {
-            componentType = ((ArrayType) array.getType()).getComponentType();
-        } else if (array.getType() instanceof MetaType) {
-            // the array being accessed is a wildcard, so the returned type is a new wildcard within the same scope
-            componentType = new MetaType(scope);
-        } else {
-            throw new IllegalArgumentException("Array access must operate on arrays, not " + array.getType());
-        }
 
         this.scope = scope;
         this.array = array;
@@ -82,11 +60,6 @@ public final class ArrayAccess implements Expression {
      */
     public Expression getIndex() {
         return index;
-    }
-
-    @Override
-    public Type getType() {
-        return componentType;
     }
 
     @Override

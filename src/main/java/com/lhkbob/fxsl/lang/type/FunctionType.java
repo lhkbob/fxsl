@@ -1,6 +1,5 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public class FunctionType implements Type {
-    private final Scope scope;
     private final List<Type> parameters;
     private final Type returnType;
 
@@ -41,19 +39,16 @@ public class FunctionType implements Type {
      * type specified by `returnType`. The parameter list is copied so modifications to `parameters` will not
      * affect the created type.
      *
-     * @param scope The scope that declared this type
      * @param parameters The parameter list
      * @param returnType The return type
      * @throws java.lang.IllegalArgumentException if `parameters` is empty
      * @throws java.lang.NullPointerException     if `parameters` is null, contains null elements, or if
      *                                            `returnType` is null
      */
-    public FunctionType(Scope scope, List<? extends Type> parameters, Type returnType) {
+    public FunctionType(List<? extends Type> parameters, Type returnType) {
         validCollection("parameters", parameters);
         notNull("returnType", returnType);
-        notNull("scope", scope);
 
-        this.scope = scope;
         this.parameters = Collections.unmodifiableList(new ArrayList<>(parameters));
         this.returnType = returnType;
     }
@@ -101,11 +96,6 @@ public class FunctionType implements Type {
     }
 
     @Override
-    public Scope getScope() {
-        return scope;
-    }
-
-    @Override
     public <T> T accept(Type.Visitor<T> visitor) {
         return visitor.visitFunctionType(this);
     }
@@ -116,13 +106,12 @@ public class FunctionType implements Type {
             return false;
         }
         FunctionType f = (FunctionType) t;
-        return f.scope.equals(scope) && f.returnType.equals(returnType) && f.parameters.equals(parameters);
+        return f.returnType.equals(returnType) && f.parameters.equals(parameters);
     }
 
     @Override
     public int hashCode() {
         int result = 17;
-        result += 31 * result + scope.hashCode();
         result += 31 * result + returnType.hashCode();
         result += 31 * result + parameters.hashCode();
         return result;

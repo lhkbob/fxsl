@@ -1,10 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.type.FunctionType;
-import com.lhkbob.fxsl.lang.type.MetaType;
-import com.lhkbob.fxsl.lang.type.Type;
-import com.lhkbob.fxsl.lang.type.UnionType;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
@@ -18,12 +14,12 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  * Union Values
  * ============
  *
- * Union values are expressions that form instances of {@link com.lhkbob.fxsl.lang.type.UnionType} within FXSL. In order for a  union
- * value expression to be valid, the expressions combined must have types that form a valid union type. Thus,
- * even if two different functions with the exact same signature or union'ed together, a compiler failure will
- * arise because there is only a single function type involved in the union. Not every instance of functions
- * with equivalent signatures being union'ed can be caught by the UnionValue's constructor, but it can be
- * verified completely when function selection is performed.
+ * Union values are expressions that form instances of {@link com.lhkbob.fxsl.lang.type.UnionType} within
+ * FXSL. In order for a  union value expression to be valid, the expressions combined must have types that
+ * form a valid union type. Thus, even if two different functions with the exact same signature or union'ed
+ * together, a compiler failure will arise because there is only a single function type involved in the union.
+ * Not every instance of functions with equivalent signatures being union'ed can be caught by the UnionValue's
+ * constructor, but it can be verified completely when function selection is performed.
  *
  * If valid, the type of union value expressions is implicitly defined by the types of the expressions being
  * combined. For convenience, a union made with other unions will flatten out the options from its child
@@ -37,7 +33,6 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 public final class UnionValue implements Expression {
     private final Scope scope;
     private final Set<Expression> functions;
-    private final transient UnionType type;
 
     /**
      * Create a new union value that is the union of the given `functions`. The type of this expression is
@@ -48,36 +43,25 @@ public final class UnionValue implements Expression {
      * UnionValues are encountered. However, not every expression with a union type can be flattened if the
      * actual option expressions cannot be determined.
      *
-     * @param scope The scope within which the union is declared
+     * @param scope     The scope within which the union is declared
      * @param functions The function options of the union
-     * @throws java.lang.IllegalArgumentException if `functions` is empty or contains an expression that is
-     *                                            not a union, function, or wildcard, or if the set of
-     *                                            expressions forms an invalid union type
+     * @throws java.lang.IllegalArgumentException if `functions` is empty
      * @throws java.lang.NullPointerException     if `functions` is null or contains null elements
      */
     public UnionValue(Scope scope, Set<? extends Expression> functions) {
         notNull("scope", scope);
         validCollection("functions", functions);
 
-        Set<Type> types = new HashSet<>();
         Set<Expression> flattened = new HashSet<>();
         for (Expression t : functions) {
-            Type type = t.getType();
-            if (!(type instanceof UnionType || type instanceof FunctionType ||
-                  type instanceof MetaType)) {
-                throw new IllegalArgumentException("Functional union only supports functions, unions, and wildcards, not " +
-                                                   type);
-            } else if (t instanceof UnionValue) {
+            if (t instanceof UnionValue) {
                 flattened.addAll(((UnionValue) t).getOptions());
             } else {
                 flattened.add(t);
             }
-
-            types.add(t.getType());
         }
 
         this.scope = scope;
-        type = new UnionType(scope, types);
         this.functions = Collections.unmodifiableSet(flattened);
     }
 
@@ -93,11 +77,6 @@ public final class UnionValue implements Expression {
      */
     public Set<Expression> getOptions() {
         return functions;
-    }
-
-    @Override
-    public UnionType getType() {
-        return type;
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.lang.type.StructType;
-import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
@@ -16,8 +15,8 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  * =============
  *
  * Struct values are the constructor expressions that form instances of {@link
- * com.lhkbob.fxsl.lang.type.StructType}. The expression type of a struct value is implicitly defined by the fields
- * specified and their  corresponding expressions' types.
+ * com.lhkbob.fxsl.lang.type.StructType}. The expression type of a struct value is implicitly defined by the
+ * fields specified and their  corresponding expressions' types.
  *
  * @author Michael Ludwig
  */
@@ -25,7 +24,6 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
 public final class StructValue implements Expression {
     private final Scope scope;
     private final Map<String, Expression> fields;
-    private final transient StructType type;
 
     /**
      * Create a new struct value that is described completely by the map. The keys in the map are the field
@@ -48,12 +46,7 @@ public final class StructValue implements Expression {
         noNullElements("fields", fields.keySet());
         noNullElements("fields", fields.values());
 
-        Map<String, Type> fieldTypes = new HashMap<>();
-        for (Map.Entry<String, Expression> e : fields.entrySet()) {
-            fieldTypes.put(e.getKey(), e.getValue().getType());
-        }
         this.scope = scope;
-        type = new StructType(scope, fieldTypes);
         this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
     }
 
@@ -77,11 +70,6 @@ public final class StructValue implements Expression {
      */
     public Map<String, Expression> getFields() {
         return fields;
-    }
-
-    @Override
-    public StructType getType() {
-        return type;
     }
 
     @Override

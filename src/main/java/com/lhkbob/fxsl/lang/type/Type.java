@@ -1,6 +1,5 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.LogicalEquality;
 
 /**
@@ -51,14 +50,14 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  * @author Michael Ludwig
  */
 @LogicalEquality(def = "Two types are equal if they represent the same category of FXSL type, all child " +
-                       "child types are equal, any labels are equal, and are defined in the same scope.")
+                       "child types are equal, and all other type-specific information are equal.")
 public interface Type {
     /**
      * The Type Visitor provides the visitor pattern for walking parsed type trees.
      *
      * @param <T> The type returned by the visitor, often a Type
      */
-    public static interface Visitor<T> {
+    interface Visitor<T> {
         T visitArrayType(ArrayType t);
 
         T visitFunctionType(FunctionType t);
@@ -85,10 +84,5 @@ public interface Type {
      * @return The result of invoking the appropriate `visit` method
      * @throws java.lang.NullPointerException if `visitor` is null
      */
-    public <T> T accept(Visitor<T> visitor);
-
-    /**
-     * @return The scope this type was declared or defined in
-     */
-    public Scope getScope();
+    <T> T accept(Visitor<T> visitor);
 }

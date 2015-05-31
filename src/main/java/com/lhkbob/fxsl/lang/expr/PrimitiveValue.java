@@ -65,14 +65,17 @@ public final class PrimitiveValue implements Expression {
         return value;
     }
 
-    @Override
+    /**
+     * @return The known primitive type of this value, determined by the constructor that created this
+     * instance.
+     */
     public PrimitiveType getType() {
         return type;
     }
 
     @Override
     public Scope getScope() {
-        return Scope.PRIMITIVE_SCOPE;
+        return Scope.NATIVE_SCOPE;
     }
 
     @Override

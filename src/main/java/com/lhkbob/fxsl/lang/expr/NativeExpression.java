@@ -25,19 +25,33 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
 @Immutable
 public final class NativeExpression implements Expression {
     private final Type type;
+    private final String name;
 
     /**
      * Create a new native expression that results in a value of the given `type`.
      *
+     * @param name A readable name of what the expression performs (does not define equality)
      * @param type The type of the native expression
-     * @throws java.lang.NullPointerException if `type` is null
+     * @throws java.lang.NullPointerException if `name` or `type` is null
      */
-    public NativeExpression(Type type) {
+    public NativeExpression(String name, Type type) {
+        notNull("name", name);
         notNull("type", type);
         this.type = type;
+        this.name = name;
     }
 
-    @Override
+    /**
+     * @return The readable name/description of this native expression.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return The known type of the expression, which will only refer to primitive types and concrete
+     * compositions of those types.
+     */
     public Type getType() {
         return type;
     }
@@ -67,6 +81,6 @@ public final class NativeExpression implements Expression {
 
     @Override
     public String toString() {
-        return "native(" + type.toString() + ")";
+        return "native(" + name + ")";
     }
 }

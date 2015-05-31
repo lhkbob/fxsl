@@ -1,6 +1,5 @@
 package com.lhkbob.fxsl.lang.type;
 
-import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.Collections;
@@ -25,26 +24,22 @@ import static com.lhkbob.fxsl.util.Preconditions.*;
  */
 @Immutable
 public final class StructType implements Type {
-    private final Scope scope;
     private final Map<String, Type> fields;
 
     /**
      * Create a new StructType instance that is made up of the given fields. The map is copied, so no
      * modifications to it will affect the created type.
      *
-     * @param scope  The scope this type is declared in
      * @param fields The fields of the structure
      * @throws java.lang.IllegalArgumentException if `fields` is empty
      * @throws java.lang.NullPointerException     if `fields` is null or contains null elements
      */
-    public StructType(Scope scope, Map<String, ? extends Type> fields) {
-        notNull("scope", scope);
+    public StructType( Map<String, ? extends Type> fields) {
         notNull("fields", fields);
         notEmpty("fields", fields.keySet());
         noNullElements("fields", fields.keySet());
         noNullElements("fields", fields.values());
 
-        this.scope = scope;
         this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
     }
 
@@ -75,22 +70,17 @@ public final class StructType implements Type {
     }
 
     @Override
-    public Scope getScope() {
-        return scope;
-    }
-
-    @Override
     public boolean equals(Object t) {
         if (!(t instanceof StructType)) {
             return false;
         }
         StructType o = (StructType) t;
-        return o.scope.equals(scope) && o.fields.equals(fields);
+        return o.fields.equals(fields);
     }
 
     @Override
     public int hashCode() {
-        return fields.hashCode() ^ scope.hashCode();
+        return fields.hashCode();
     }
 
     @Override

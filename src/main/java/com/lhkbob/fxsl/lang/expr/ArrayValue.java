@@ -1,9 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.type.ArrayType;
-import com.lhkbob.fxsl.lang.type.Type;
-import com.lhkbob.fxsl.lang.type.Types;
 import com.lhkbob.fxsl.util.Immutable;
 
 import java.util.ArrayList;
@@ -31,34 +28,23 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
 @Immutable
 public final class ArrayValue implements Expression {
     private final Scope scope;
-    private final ArrayType type;
     private final List<Expression> elements;
 
     /**
      * Create a new array value with element values taken directly from the list `elements`. The list is
      * copied so modifications to `elements` after the constructor completes will not affect the array value.
      *
-     * @param scope         The scope the array value is constructed within
-     * @param componentType The type that all array elements are assignable to
-     * @param elements      The array elements
-     * @throws java.lang.IllegalArgumentException if `elements` is null or its expressions' types are not
-     *                                            assignable to the component type
-     * @throws java.lang.NullPointerException     if `scope` or `componentType` are null, or `elements` is
-     *                                            null or contains null elements
+     * @param scope    The scope the array value is constructed within
+     * @param elements The array elements
+     * @throws IllegalArgumentException       if `elements` is empty
+     * @throws java.lang.NullPointerException if `scope` or `componentType` are null, or `elements` is
+     *                                        null or contains null elements
      */
-    public ArrayValue(Scope scope, Type componentType, List<? extends Expression> elements) {
+    public ArrayValue(Scope scope, List<? extends Expression> elements) {
         validCollection("elements", elements);
-        notNull("componentType", componentType);
         notNull("scope", scope);
 
-        for (Expression e: elements) {
-            if (!Types.isAssignable(componentType, e.getType())) {
-                throw new IllegalArgumentException("Expression not assignable to component type: " + e + " must be of type " + componentType);
-            }
-        }
-
         this.scope = scope;
-        this.type = new ArrayType(scope, componentType, elements.size());
         this.elements = Collections.unmodifiableList(new ArrayList<>(elements));
     }
 
@@ -93,11 +79,6 @@ public final class ArrayValue implements Expression {
      */
     public List<Expression> getElements() {
         return elements;
-    }
-
-    @Override
-    public ArrayType getType() {
-        return type;
     }
 
     @Override

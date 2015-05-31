@@ -1,7 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.type.Type;
 import com.lhkbob.fxsl.util.LogicalEquality;
 
 /**
@@ -68,7 +67,7 @@ import com.lhkbob.fxsl.util.LogicalEquality;
  *
  * @author Michael Ludwig
  */
-@LogicalEquality(def = "Two expressions are equal if they are the same category of expression, have equal " +
+@LogicalEquality(def = "Two expressions are equal if they are the same type of expression, have equal " +
                        "child expressions (respecting any order defined by the expression), and are defined" +
                        " within the same scope")
 public interface Expression {
@@ -77,42 +76,36 @@ public interface Expression {
      *
      * @param <T> The class type that a visitor returns (generally an Expression)
      */
-    public static interface Visitor<T> {
-        public T visitArrayAccess(ArrayAccess access);
+    interface Visitor<T> {
+        T visitArrayAccess(ArrayAccess access);
 
-        public T visitArray(ArrayValue value);
+        T visitArray(ArrayValue value);
 
-        public T visitFunctionCall(FunctionCall function);
+        T visitFunctionCall(FunctionCall function);
 
-        public T visitFunction(FunctionValue function);
+        T visitFunction(FunctionValue function);
 
-        public T visitParameter(ParameterExpression param);
+        T visitParameter(ParameterExpression param);
 
-        public T visitPrimitive(PrimitiveValue primitive);
+        T visitPrimitive(PrimitiveValue primitive);
 
-        public T visitFieldAccess(StructFieldAccess access);
+        T visitArrayLength(ArrayLengthExpression length);
 
-        public T visitStruct(StructValue struct);
+        T visitFieldAccess(StructFieldAccess access);
 
-        public T visitUnion(UnionValue union);
+        T visitStruct(StructValue struct);
 
-        public T visitVariable(VariableExpression var);
+        T visitUnion(UnionValue union);
 
-        public T visitNativeExpression(NativeExpression expr);
+        T visitVariable(VariableExpression var);
+
+        T visitNativeExpression(NativeExpression expr);
     }
-
-    /**
-     * Get the type of this expression, which may not be concrete. However, implementations should return
-     * the most concrete type possible given available information. This cannot return null.
-     *
-     * @return The type this expression evaluates to
-     */
-    public Type getType();
 
     /**
      * @return The scope that this expression was defined in
      */
-    public Scope getScope();
+    Scope getScope();
 
     /**
      * Invoke the appropriate `visit` method of the visitor based on the concrete class type of this
@@ -123,5 +116,5 @@ public interface Expression {
      * @return The result of invoking the appropriate `visit` method
      * @throws java.lang.NullPointerException if `visitor` is null
      */
-    public <T> T accept(Visitor<T> visitor);
+    <T> T accept(Visitor<T> visitor);
 }

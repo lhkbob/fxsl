@@ -28,15 +28,10 @@ import com.lhkbob.fxsl.util.Immutable;
 @Immutable
 public class Scope {
     /**
-     * A special scope independent of any scope hierarchy that's part of a parsed program that contains
-     * all native-level language features.
+     * A special scope that's the parent of every scope hierarchy that's part of a parsed program that
+     * contains all native-level language features, primitive types and values.
      */
     public static final Scope NATIVE_SCOPE = new Scope();
-
-    /**
-     * A special scope, that's a child of {@link #NATIVE_SCOPE} that contains all primitive types and values.
-     */
-    public static final Scope PRIMITIVE_SCOPE = new Scope(NATIVE_SCOPE);
 
     private final Scope parent;
 
@@ -74,5 +69,16 @@ public class Scope {
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        // FIXME could improve this by allowing scopes to have labels associated with them, which could
+        // refer to the script file or the function, etc, finally falling back to this anonymous label
+        if (NATIVE_SCOPE.equals(this)) {
+            return "native";
+        } else {
+            return "__s" + Integer.toHexString(System.identityHashCode(this));
+        }
     }
 }

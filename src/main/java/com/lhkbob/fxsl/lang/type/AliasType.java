@@ -40,12 +40,12 @@ public class AliasType implements Type {
     }
 
     /**
-     * Get the scope the alias was referenced from, which is also the defining scope for the instantiation
-     * of this alias.
+     * Get the scope the alias was referenced from. Note that the `type <name> = ` syntax does not create
+     * an alias type associated with `name`. References to `name` throughout the rest of the code will
+     * refer back the type that was defined there (assuming not shadowed by another scope).
      *
      * @return The scope that defined this type
      */
-    @Override
     public Scope getScope() {
         return scope;
     }
@@ -80,6 +80,6 @@ public class AliasType implements Type {
 
     @Override
     public String toString() {
-        return label;
+        return String.format("%s (in %s)", label, scope);
     }
 }
