@@ -20,6 +20,7 @@
     </parent>
 
     <developers>
+        <!-- Attribute Google appropriately so that I can push future changes -->
         <developer>
             <name>Michael Ludwig</name>
         </developer>

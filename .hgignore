@@ -1,8 +1,10 @@
-syntax: regexp
-((\.iml)|(\.idea))
-syntax: regexp
-((\.classpath)|(\.project)|(\.settings))
-syntax: regexp
-((target/)|(bin/)|(gen/))
-syntax: regexp
-(.DS_Store)
+syntax: glob
+*.iml
+.idea
+.classpath
+.project
+.settings
+target
+bin
+gen
+.DS_Store

@@ -3,8 +3,6 @@
 // All capitals = simple token / symbol / keyword
 grammar FXSL;
 
-// FIXME needs rules for the functional array constructor and for uniform and attribute value constructors
-
 // ** Parser rules **
 
 typeKeyValue : Identifier COLON type;
@@ -23,19 +21,23 @@ type : LPAREN params+=type (COMMA params+=type)* DECLARE returnType=type RPAREN 
 
 ctor : LPAREN params+=optTypeKeyValue (COMMA params+=optTypeKeyValue)* DECLARE returnExpr=expr RPAREN #Function
      | LBRACK expr (COMMA expr)* RBRACK #Array
+     | LBRACK length=expr COLON func=expr RBRACK #DynamicArray
      | LBRACE exprKeyValue (COMMA exprKeyValue)* RBRACE #Struct
+     | UNIFORM LPAREN optTypeKeyValue RPAREN #Uniform
+     | ATTR LPAREN optTypeKeyValue RPAREN #Attr
      | (Boolean | Integer | Float) #Primitive;
 
 // Definitions
 
 def : TYPE Identifier ASSIGN type #TypeDef
     | VAR optTypeKeyValue ASSIGN expr #VarDef;
-defList : def (SEMI def)*;
 
 // Expressions
 
-expr : func=expr LPAREN params+=expr (COMMA params+=expr)* RPAREN #FunctionCall
-     | value=expr LBRACK field=expr RBRACK #FieldAccess // also array access
+expr : LET def (SEMI def)* IN expr #Let
+     | func=expr LPAREN params+=expr (COMMA params+=expr)* RPAREN #FunctionCall
+     | value=expr LBRACE field=Identifier RBRACE #FieldAccess
+     | value=expr LBRACK index=expr RBRACK #ArrayAccess
      | <assoc=right>left=expr op=POW right=expr #BinaryExpression
      | op=(BANG|SUB|TILDE) expr #UnaryExpression
      | left=expr op=(MUL|DIV|MOD) right=expr #BinaryExpression
@@ -44,7 +46,6 @@ expr : func=expr LPAREN params+=expr (COMMA params+=expr)* RPAREN #FunctionCall
      | left=expr op=(AND|OR) right=expr #BinaryExpression
      | left=expr op=(EQUAL|NOTEQUAL|GT|LT|GE|LE) right=expr #BinaryExpression
      | left=expr op=Identifier right=expr #BinaryExpression
-     | LET defList IN expr #Let
      | Identifier #Variable
      | ctor #Value
      | LPAREN expr RPAREN #GroupedExpression;
@@ -99,6 +100,8 @@ TYPE : 'type';
 LET : 'let';
 IN : 'in';
 VAR : 'var';
+UNIFORM : 'uniform';
+ATTR : 'attr';
 
 // Primitive types
 
