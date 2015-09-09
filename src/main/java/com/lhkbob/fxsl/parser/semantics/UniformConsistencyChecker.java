@@ -19,6 +19,13 @@ import java.util.Map;
  */
 public class UniformConsistencyChecker implements SemanticsChecker {
   @Override
+  public boolean continueOnFailure() {
+    // Although all uniforms with the same name need to have the same type, the code may otherwise
+    // be valid and can be processed for further semantic errors.
+    return true;
+  }
+
+  @Override
   public void validate(Environment environment) throws SemanticsException {
     List<SemanticsProblem> problems = new ArrayList<>();
     UniformVisitor visitor = new UniformVisitor(environment);
@@ -32,16 +39,9 @@ public class UniformConsistencyChecker implements SemanticsChecker {
     }
   }
 
-  @Override
-  public boolean continueOnFailure() {
-    // Although all uniforms with the same name need to have the same type, the code may otherwise
-    // be valid and can be processed for further semantic errors.
-    return true;
-  }
-
   private static class UniformVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
-    private final Map<String, Type> uniformTypes;
     private final Environment environment;
+    private final Map<String, Type> uniformTypes;
 
     public UniformVisitor(Environment env) {
       uniformTypes = new HashMap<>();

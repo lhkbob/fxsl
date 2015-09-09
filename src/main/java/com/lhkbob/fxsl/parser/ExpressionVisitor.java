@@ -40,6 +40,23 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
   }
 
   @Override
+  public ArrayValue visitArray(@NotNull FXSLParser.ArrayContext ctx) {
+    List<Expression> elems = new ArrayList<>(ctx.expr().size());
+    for (FXSLParser.ExprContext e : ctx.expr()) {
+      elems.add(e.accept(this));
+    }
+
+    return new ArrayValue(context.getCurrentScope(), elems);
+  }
+
+  @Override
+  public ArrayAccess visitArrayAccess(@NotNull FXSLParser.ArrayAccessContext ctx) {
+    Expression value = ctx.value.accept(this);
+    Expression index = ctx.index.accept(this);
+    return new ArrayAccess(context.getCurrentScope(), value, index);
+  }
+
+  @Override
   public Attribute visitAttr(@NotNull FXSLParser.AttrContext ctx) {
     String name;
     Type declaredType;
@@ -63,48 +80,6 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
   }
 
   @Override
-  public Expression visitStmList(@NotNull FXSLParser.StmListContext ctx) {
-    context.push();
-    try {
-      Expression lastExpr = null;
-      for (FXSLParser.StmContext stm : ctx.stm()) {
-        if (stm.def() != null) {
-          stm.def().accept(context.getDeclarationVisitor());
-        } else {
-          lastExpr = stm.expr().accept(this);
-        }
-      }
-      return lastExpr;
-    } finally {
-      context.pop();
-    }
-  }
-
-  @Override
-  public ArrayValue visitArray(@NotNull FXSLParser.ArrayContext ctx) {
-    List<Expression> elems = new ArrayList<>(ctx.expr().size());
-    for (FXSLParser.ExprContext e : ctx.expr()) {
-      elems.add(e.accept(this));
-    }
-
-    return new ArrayValue(context.getCurrentScope(), elems);
-  }
-
-  @Override
-  public StructFieldAccess visitFieldAccess(@NotNull FXSLParser.FieldAccessContext ctx) {
-    Expression value = ctx.value.accept(this);
-    String fieldName = ctx.field.getText();
-    return new StructFieldAccess(context.getCurrentScope(), value, fieldName);
-  }
-
-  @Override
-  public ArrayAccess visitArrayAccess(@NotNull FXSLParser.ArrayAccessContext ctx) {
-    Expression value = ctx.value.accept(this);
-    Expression index = ctx.index.accept(this);
-    return new ArrayAccess(context.getCurrentScope(), value, index);
-  }
-
-  @Override
   public FunctionCall visitBinaryExpression(@NotNull FXSLParser.BinaryExpressionContext ctx) {
     Expression left = ctx.left.accept(this);
     Expression right = ctx.right.accept(this);
@@ -114,22 +89,17 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
   }
 
   @Override
-  public VariableReference visitVariable(@NotNull FXSLParser.VariableContext ctx) {
-    String varName = ctx.Identifier().getText();
-    return new VariableReference(context.getCurrentScope(), varName);
+  public Expression visitDynamicArray(@NotNull FXSLParser.DynamicArrayContext ctx) {
+    Expression length = ctx.length.accept(this);
+    Expression elements = ctx.func.accept(this);
+    return new DynamicArrayValue(context.getCurrentScope(), length, elements);
   }
 
   @Override
-  public Expression visitLet(@NotNull FXSLParser.LetContext ctx) {
-    context.push();
-    try {
-      for (FXSLParser.DefContext def : ctx.def()) {
-        def.accept(context.getDeclarationVisitor());
-      }
-      return ctx.expr().accept(this);
-    } finally {
-      context.pop();
-    }
+  public StructFieldAccess visitFieldAccess(@NotNull FXSLParser.FieldAccessContext ctx) {
+    Expression value = ctx.value.accept(this);
+    String fieldName = ctx.field.getText();
+    return new StructFieldAccess(context.getCurrentScope(), value, fieldName);
   }
 
   @Override
@@ -185,6 +155,75 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
   }
 
   @Override
+  public Expression visitIfThenElse(@NotNull FXSLParser.IfThenElseContext ctx) {
+    Expression condition = ctx.condition.accept(this);
+    Expression trueExpr = ctx.trueExpr.accept(this);
+    Expression falseExpr = ctx.falseExpr.accept(this);
+    return new IfThenElse(context.getCurrentScope(), condition, trueExpr, falseExpr);
+  }
+
+  @Override
+  public Expression visitLet(@NotNull FXSLParser.LetContext ctx) {
+    context.push();
+    try {
+      for (FXSLParser.DefContext def : ctx.def()) {
+        def.accept(context.getDeclarationVisitor());
+      }
+      return ctx.expr().accept(this);
+    } finally {
+      context.pop();
+    }
+  }
+
+  @Override
+  public PrimitiveValue visitPrimitive(@NotNull FXSLParser.PrimitiveContext ctx) {
+    if (ctx.Boolean() != null) {
+      return new PrimitiveValue(Boolean.parseBoolean(ctx.Boolean().getText()));
+    } else if (ctx.Integer() != null) {
+      return new PrimitiveValue(Integer.parseInt(ctx.Integer().getText()));
+    } else if (ctx.Float() != null) {
+      return new PrimitiveValue(Float.parseFloat(ctx.Float().getText()));
+    } else {
+      throw new IllegalStateException("Not a real primitive value");
+    }
+  }
+
+  @Override
+  public Expression visitStmList(@NotNull FXSLParser.StmListContext ctx) {
+    context.push();
+    try {
+      Expression lastExpr = null;
+      for (FXSLParser.StmContext stm : ctx.stm()) {
+        if (stm.def() != null) {
+          stm.def().accept(context.getDeclarationVisitor());
+        } else {
+          lastExpr = stm.expr().accept(this);
+        }
+      }
+      return lastExpr;
+    } finally {
+      context.pop();
+    }
+  }
+
+  @Override
+  public StructValue visitStruct(@NotNull FXSLParser.StructContext ctx) {
+    Map<String, Expression> fields = new HashMap<>();
+    for (FXSLParser.ExprKeyValueContext f : ctx.exprKeyValue()) {
+      Expression value = f.expr().accept(this);
+      fields.put(f.Identifier().getText(), value);
+    }
+    return new StructValue(context.getCurrentScope(), fields);
+  }
+
+  @Override
+  public FunctionCall visitUnaryExpression(@NotNull FXSLParser.UnaryExpressionContext ctx) {
+    Expression arg = ctx.expr().accept(this);
+    Expression function = new VariableReference(context.getCurrentScope(), ctx.op.getText());
+    return new FunctionCall(context.getCurrentScope(), function, Collections.singletonList(arg));
+  }
+
+  @Override
   public Uniform visitUniform(@NotNull FXSLParser.UniformContext ctx) {
     String name;
     Type declaredType;
@@ -208,48 +247,9 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
   }
 
   @Override
-  public FunctionCall visitUnaryExpression(@NotNull FXSLParser.UnaryExpressionContext ctx) {
-    Expression arg = ctx.expr().accept(this);
-    Expression function = new VariableReference(context.getCurrentScope(), ctx.op.getText());
-    return new FunctionCall(context.getCurrentScope(), function, Collections.singletonList(arg));
-  }
-
-  @Override
-  public StructValue visitStruct(@NotNull FXSLParser.StructContext ctx) {
-    Map<String, Expression> fields = new HashMap<>();
-    for (FXSLParser.ExprKeyValueContext f : ctx.exprKeyValue()) {
-      Expression value = f.expr().accept(this);
-      fields.put(f.Identifier().getText(), value);
-    }
-    return new StructValue(context.getCurrentScope(), fields);
-  }
-
-  @Override
-  public PrimitiveValue visitPrimitive(@NotNull FXSLParser.PrimitiveContext ctx) {
-    if (ctx.Boolean() != null) {
-      return new PrimitiveValue(Boolean.parseBoolean(ctx.Boolean().getText()));
-    } else if (ctx.Integer() != null) {
-      return new PrimitiveValue(Integer.parseInt(ctx.Integer().getText()));
-    } else if (ctx.Float() != null) {
-      return new PrimitiveValue(Float.parseFloat(ctx.Float().getText()));
-    } else {
-      throw new IllegalStateException("Not a real primitive value");
-    }
-  }
-
-  @Override
-  public Expression visitDynamicArray(@NotNull FXSLParser.DynamicArrayContext ctx) {
-    Expression length = ctx.length.accept(this);
-    Expression elements = ctx.func.accept(this);
-    return new DynamicArrayValue(context.getCurrentScope(), length, elements);
-  }
-
-  @Override
-  public Expression visitIfThenElse(@NotNull FXSLParser.IfThenElseContext ctx) {
-    Expression condition = ctx.condition.accept(this);
-    Expression trueExpr = ctx.trueExpr.accept(this);
-    Expression falseExpr = ctx.falseExpr.accept(this);
-    return new IfThenElse(context.getCurrentScope(), condition, trueExpr, falseExpr);
+  public VariableReference visitVariable(@NotNull FXSLParser.VariableContext ctx) {
+    String varName = ctx.Identifier().getText();
+    return new VariableReference(context.getCurrentScope(), varName);
   }
 
 }

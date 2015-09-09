@@ -66,14 +66,15 @@ public final class UnionType extends EfficientEqualityBase implements Type {
     this.functions = Collections.unmodifiableList(new ArrayList<>(functions));
   }
 
-  /**
-   * Get the list of function options represented by this union type.  It will have at least two
-   * elements. The returned list is immutable.
-   *
-   * @return The function options of this type
-   */
-  public List<Type> getOptions() {
-    return functions;
+  @Override
+  public <T> T accept(Type.Visitor<T> visitor) {
+    return visitor.visitUnionType(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    UnionType t = compareHashCodes(UnionType.class, o);
+    return t != null && t.functions.equals(functions);
   }
 
   public Type getOption(int index) {
@@ -84,9 +85,14 @@ public final class UnionType extends EfficientEqualityBase implements Type {
     return functions.size();
   }
 
-  @Override
-  public <T> T accept(Type.Visitor<T> visitor) {
-    return visitor.visitUnionType(this);
+  /**
+   * Get the list of function options represented by this union type.  It will have at least two
+   * elements. The returned list is immutable.
+   *
+   * @return The function options of this type
+   */
+  public List<Type> getOptions() {
+    return functions;
   }
 
   @Override
@@ -107,11 +113,5 @@ public final class UnionType extends EfficientEqualityBase implements Type {
   @Override
   protected int computeHashCode() {
     return functions.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    UnionType t = compareHashCodes(UnionType.class, o);
-    return t != null && t.functions.equals(functions);
   }
 }

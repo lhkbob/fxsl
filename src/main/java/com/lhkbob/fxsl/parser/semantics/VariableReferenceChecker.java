@@ -16,6 +16,11 @@ import java.util.List;
  */
 public class VariableReferenceChecker implements SemanticsChecker {
   @Override
+  public boolean continueOnFailure() {
+    return false;
+  }
+
+  @Override
   public void validate(Environment environment) throws SemanticsException {
     VariableVisitor visitor = new VariableVisitor(environment);
     List<SemanticsProblem> problems = new ArrayList<>();
@@ -29,11 +34,6 @@ public class VariableReferenceChecker implements SemanticsChecker {
     if (!problems.isEmpty()) {
       throw new SemanticsException("Undefined variables", problems);
     }
-  }
-
-  @Override
-  public boolean continueOnFailure() {
-    return false;
   }
 
   private static class VariableVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {

@@ -27,6 +27,7 @@ import com.lhkbob.fxsl.util.Immutable;
  */
 @Immutable
 public class Scope {
+// *** PUBLIC API CONSTANTS
   /**
    * A special scope that's the parent of every scope hierarchy that's part of a parsed program
    * that contains all native-level language features, primitive types and values.
@@ -53,6 +54,11 @@ public class Scope {
     this.parent = parent;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    return o == this;
+  }
+
   /**
    * Get the parent scope of this scope. If this returns null then the scope represents a root
    * scope.
@@ -66,11 +72,6 @@ public class Scope {
   @Override
   public int hashCode() {
     return System.identityHashCode(this);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    return o == this;
   }
 
   @Override

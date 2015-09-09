@@ -19,10 +19,9 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class ArrayAccess extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
-
   private final Expression array;
   private final Expression index;
+  private final Scope scope;
 
   /**
    * Create a new array access expression that accesses `array` at the given `index`.
@@ -44,6 +43,17 @@ public final class ArrayAccess extends EfficientEqualityBase implements Expressi
     this.scope = scope;
     this.array = array;
     this.index = index;
+  }
+
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitArrayAccess(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    ArrayAccess a = compareHashCodes(ArrayAccess.class, o);
+    return a != null && a.scope.equals(scope) && a.array.equals(array) && a.index.equals(index);
   }
 
   /**
@@ -73,11 +83,6 @@ public final class ArrayAccess extends EfficientEqualityBase implements Expressi
   }
 
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitArrayAccess(this);
-  }
-
-  @Override
   public String toString() {
     return array.toString() + "[" + index.toString() + "]";
   }
@@ -89,11 +94,5 @@ public final class ArrayAccess extends EfficientEqualityBase implements Expressi
     result += 31 * result + array.hashCode();
     result += 31 * result + index.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    ArrayAccess a = compareHashCodes(ArrayAccess.class, o);
-    return a != null && a.scope.equals(scope) && a.array.equals(array) && a.index.equals(index);
   }
 }

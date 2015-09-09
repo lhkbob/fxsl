@@ -58,6 +58,30 @@ import com.lhkbob.fxsl.util.LogicalEquality;
         + "child types are equal, and all other type-specific information are equal.")
 public interface Type {
   /**
+   * The Type Visitor provides the visitor pattern for walking parsed type trees.
+   *
+   * @param <T>
+   *     The type returned by the visitor, often a Type
+   */
+  interface Visitor<T> {
+    T visitAliasType(AliasType t);
+
+    T visitArrayType(ArrayType t);
+
+    T visitFunctionType(FunctionType t);
+
+    T visitMetaType(MetaType t);
+
+    T visitParametricType(ParametricType t);
+
+    T visitPrimitiveType(PrimitiveType t);
+
+    T visitStructType(StructType t);
+
+    T visitUnionType(UnionType t);
+  }
+
+  /**
    * Invoke the appropriate `visit` method of the visitor based on the concrete class type of this
    * FXSL type and return the result of that visitation.
    *
@@ -71,28 +95,4 @@ public interface Type {
    *     if `visitor` is null
    */
   <T> T accept(Visitor<T> visitor);
-
-  /**
-   * The Type Visitor provides the visitor pattern for walking parsed type trees.
-   *
-   * @param <T>
-   *     The type returned by the visitor, often a Type
-   */
-  interface Visitor<T> {
-    T visitArrayType(ArrayType t);
-
-    T visitFunctionType(FunctionType t);
-
-    T visitMetaType(MetaType t);
-
-    T visitParametricType(ParametricType t);
-
-    T visitAliasType(AliasType t);
-
-    T visitPrimitiveType(PrimitiveType t);
-
-    T visitStructType(StructType t);
-
-    T visitUnionType(UnionType t);
-  }
 }

@@ -28,13 +28,15 @@ public class ParametricType extends EfficientEqualityBase implements Type {
     this.scope = scope;
   }
 
-  /**
-   * Get the scope this parameter is valid within.
-   *
-   * @return The scope that defined this type
-   */
-  public Scope getScope() {
-    return scope;
+  @Override
+  public <T> T accept(Type.Visitor<T> visitor) {
+    return visitor.visitParametricType(this);
+  }
+
+  @Override
+  public boolean equals(Object t) {
+    ParametricType p = compareHashCodes(ParametricType.class, t);
+    return p != null && p.label.equals(label) && p.scope.equals(scope);
   }
 
   /**
@@ -46,9 +48,13 @@ public class ParametricType extends EfficientEqualityBase implements Type {
     return label;
   }
 
-  @Override
-  public <T> T accept(Type.Visitor<T> visitor) {
-    return visitor.visitParametricType(this);
+  /**
+   * Get the scope this parameter is valid within.
+   *
+   * @return The scope that defined this type
+   */
+  public Scope getScope() {
+    return scope;
   }
 
   @Override
@@ -59,11 +65,5 @@ public class ParametricType extends EfficientEqualityBase implements Type {
   @Override
   protected int computeHashCode() {
     return label.hashCode() ^ scope.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    ParametricType p = compareHashCodes(ParametricType.class, t);
-    return p != null && p.label.equals(label) && p.scope.equals(scope);
   }
 }

@@ -75,9 +75,44 @@ import com.lhkbob.fxsl.util.LogicalEquality;
         " within the same scope")
 public interface Expression {
   /**
-   * @return The scope that this expression was defined in
+   * The Expression Visitor provides the visitor pattern for walking parsed expression trees.
+   *
+   * @param <T>
+   *     The class type that a visitor returns (generally an Expression)
    */
-  Scope getScope();
+  interface Visitor<T> {
+    T visitArray(ArrayValue value);
+
+    T visitArrayAccess(ArrayAccess access);
+
+    T visitArrayLength(ArrayLength length);
+
+    T visitAttribute(Attribute attr);
+
+    T visitDynamicArray(DynamicArrayValue value);
+
+    T visitFieldAccess(StructFieldAccess access);
+
+    T visitFunction(FunctionValue function);
+
+    T visitFunctionCall(FunctionCall function);
+
+    T visitIfThenElse(IfThenElse test);
+
+    T visitNativeExpression(NativeExpression expr);
+
+    T visitParameter(Parameter param);
+
+    T visitPrimitive(PrimitiveValue primitive);
+
+    T visitStruct(StructValue struct);
+
+    T visitUniform(Uniform uniform);
+
+    T visitUnion(UnionValue union);
+
+    T visitVariable(VariableReference var);
+  }
 
   // TODO: it would be cool to record where the expressions come from in the source, e.g filename and line
   // so that if we have to print out error messages they can be more informative. Does this go in the
@@ -100,42 +135,7 @@ public interface Expression {
   <T> T accept(Visitor<T> visitor);
 
   /**
-   * The Expression Visitor provides the visitor pattern for walking parsed expression trees.
-   *
-   * @param <T>
-   *     The class type that a visitor returns (generally an Expression)
+   * @return The scope that this expression was defined in
    */
-  interface Visitor<T> {
-    T visitArrayAccess(ArrayAccess access);
-
-    T visitArray(ArrayValue value);
-
-    T visitFunctionCall(FunctionCall function);
-
-    T visitFunction(FunctionValue function);
-
-    T visitParameter(Parameter param);
-
-    T visitPrimitive(PrimitiveValue primitive);
-
-    T visitArrayLength(ArrayLength length);
-
-    T visitFieldAccess(StructFieldAccess access);
-
-    T visitStruct(StructValue struct);
-
-    T visitUnion(UnionValue union);
-
-    T visitVariable(VariableReference var);
-
-    T visitNativeExpression(NativeExpression expr);
-
-    T visitDynamicArray(DynamicArrayValue value);
-
-    T visitUniform(Uniform uniform);
-
-    T visitAttribute(Attribute attr);
-
-    T visitIfThenElse(IfThenElse test);
-  }
+  Scope getScope();
 }

@@ -57,24 +57,26 @@ public class FunctionType extends EfficientEqualityBase implements Type {
     this.returnType = returnType;
   }
 
-  /**
-   * Get the return type of this function, e.g. the type of any invocations on instances of this
-   * type.
-   *
-   * @return The return type of the function
-   */
-  public Type getReturnType() {
-    return returnType;
+  @Override
+  public <T> T accept(Type.Visitor<T> visitor) {
+    return visitor.visitFunctionType(this);
+  }
+
+  @Override
+  public boolean equals(Object t) {
+    FunctionType f = compareHashCodes(FunctionType.class, t);
+    return f != null && f.returnType.equals(returnType) && f.parameters.equals(parameters);
   }
 
   /**
-   * Get all parameter types of this function, in the order they were declared in the shader. The
-   * list will have at least one type. The returned list cannot be modified.
+   * Get the maximum number of parameters instances of this function type can be invoked with. If
+   * invoked with fewer a curried function value is created instead of actually invoking the base
+   * function.
    *
-   * @return The parameter types of the function
+   * @return The parameter count
    */
-  public List<Type> getParameterTypes() {
-    return parameters;
+  public int getParameterCount() {
+    return parameters.size();
   }
 
   /**
@@ -94,19 +96,23 @@ public class FunctionType extends EfficientEqualityBase implements Type {
   }
 
   /**
-   * Get the maximum number of parameters instances of this function type can be invoked with. If
-   * invoked with fewer a curried function value is created instead of actually invoking the base
-   * function.
+   * Get all parameter types of this function, in the order they were declared in the shader. The
+   * list will have at least one type. The returned list cannot be modified.
    *
-   * @return The parameter count
+   * @return The parameter types of the function
    */
-  public int getParameterCount() {
-    return parameters.size();
+  public List<Type> getParameterTypes() {
+    return parameters;
   }
 
-  @Override
-  public <T> T accept(Type.Visitor<T> visitor) {
-    return visitor.visitFunctionType(this);
+  /**
+   * Get the return type of this function, e.g. the type of any invocations on instances of this
+   * type.
+   *
+   * @return The return type of the function
+   */
+  public Type getReturnType() {
+    return returnType;
   }
 
   @Override
@@ -132,11 +138,5 @@ public class FunctionType extends EfficientEqualityBase implements Type {
     result += 31 * result + returnType.hashCode();
     result += 31 * result + parameters.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    FunctionType f = compareHashCodes(FunctionType.class, t);
-    return f != null && f.returnType.equals(returnType) && f.parameters.equals(parameters);
   }
 }

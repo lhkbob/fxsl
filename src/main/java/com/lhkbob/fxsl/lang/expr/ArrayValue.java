@@ -29,8 +29,8 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public final class ArrayValue extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
   private final List<Expression> elements;
+  private final Scope scope;
 
   /**
    * Create a new array value with element values taken directly from the list `elements`. The
@@ -55,13 +55,15 @@ public final class ArrayValue extends EfficientEqualityBase implements Expressio
     this.elements = Collections.unmodifiableList(new ArrayList<>(elements));
   }
 
-  /**
-   * Get the length of the array value, which is equal to the length of the associated array type.
-   *
-   * @return The length of the array value, will be at least 1
-   */
-  public int getLength() {
-    return elements.size();
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitArray(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    ArrayValue v = compareHashCodes(ArrayValue.class, o);
+    return v != null && v.scope.equals(scope) && v.elements.equals(elements);
   }
 
   /**
@@ -90,14 +92,18 @@ public final class ArrayValue extends EfficientEqualityBase implements Expressio
     return elements;
   }
 
-  @Override
-  public Scope getScope() {
-    return scope;
+  /**
+   * Get the length of the array value, which is equal to the length of the associated array type.
+   *
+   * @return The length of the array value, will be at least 1
+   */
+  public int getLength() {
+    return elements.size();
   }
 
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitArray(this);
+  public Scope getScope() {
+    return scope;
   }
 
   @Override
@@ -120,11 +126,5 @@ public final class ArrayValue extends EfficientEqualityBase implements Expressio
   @Override
   protected int computeHashCode() {
     return elements.hashCode() ^ scope.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    ArrayValue v = compareHashCodes(ArrayValue.class, o);
-    return v != null && v.scope.equals(scope) && v.elements.equals(elements);
   }
 }

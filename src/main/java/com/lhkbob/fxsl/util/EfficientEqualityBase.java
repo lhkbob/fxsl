@@ -14,11 +14,16 @@ package com.lhkbob.fxsl.util;
  * @author Michael Ludwig
  */
 public abstract class EfficientEqualityBase {
-  // An unlikely hashcode to occur in nature. The code works fine even when the subclasses produce
-  // this as a valid hashcode, it just won't be cached.
-  private static final int INVALID_HASHCODE = ~0;
+  @Override
+  public abstract boolean equals(Object o);
 
-  private transient int hashcode = INVALID_HASHCODE;
+  @Override
+  public int hashCode() {
+    if (hashcode == INVALID_HASHCODE) {
+      hashcode = computeHashCode();
+    }
+    return hashcode;
+  }
 
   /**
    * Compare the hashcode of this instance to the hashcode of the other instance. If `other` is
@@ -52,14 +57,6 @@ public abstract class EfficientEqualityBase {
     }
   }
 
-  @Override
-  public int hashCode() {
-    if (hashcode == INVALID_HASHCODE) {
-      hashcode = computeHashCode();
-    }
-    return hashcode;
-  }
-
   /**
    * Compute the hashcode that should be returned by `hashCode()`. All requirements and
    * expectations described in the documentation of {@link Object#hashCode()} apply here. A special
@@ -72,6 +69,8 @@ public abstract class EfficientEqualityBase {
    */
   protected abstract int computeHashCode();
 
-  @Override
-  public abstract boolean equals(Object o);
+  // An unlikely hashcode to occur in nature. The code works fine even when the subclasses produce
+  // this as a valid hashcode, it just won't be cached.
+  private static final int INVALID_HASHCODE = ~0;
+  private transient int hashcode = INVALID_HASHCODE;
 }

@@ -33,8 +33,8 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public final class UnionValue extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
   private final List<Expression> functions;
+  private final Scope scope;
 
   /**
    * Create a new union value that is the union of the given `functions`. The type of this
@@ -62,6 +62,25 @@ public final class UnionValue extends EfficientEqualityBase implements Expressio
     this.functions = Collections.unmodifiableList(new ArrayList<>(functions));
   }
 
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitUnion(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    UnionValue v = compareHashCodes(UnionValue.class, o);
+    return v != null && v.scope.equals(scope) && v.functions.equals(functions);
+  }
+
+  public Expression getOption(int index) {
+    return functions.get(index);
+  }
+
+  public int getOptionCount() {
+    return functions.size();
+  }
+
   /**
    * Get all function options this union embodies. Note that the size of this set is not
    * necessarily equal to the type set returned by `infer().getOptions()`. This is because a union
@@ -77,22 +96,9 @@ public final class UnionValue extends EfficientEqualityBase implements Expressio
     return functions;
   }
 
-  public Expression getOption(int index) {
-    return functions.get(index);
-  }
-
-  public int getOptionCount() {
-    return functions.size();
-  }
-
   @Override
   public Scope getScope() {
     return scope;
-  }
-
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitUnion(this);
   }
 
   @Override
@@ -113,11 +119,5 @@ public final class UnionValue extends EfficientEqualityBase implements Expressio
   @Override
   protected int computeHashCode() {
     return functions.hashCode() ^ scope.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    UnionValue v = compareHashCodes(UnionValue.class, o);
-    return v != null && v.scope.equals(scope) && v.functions.equals(functions);
   }
 }

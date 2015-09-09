@@ -11,8 +11,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class DynamicArrayValue extends EfficientEqualityBase implements Expression {
-  private final Expression length;
   private final Expression elementFunction;
+  private final Expression length;
   private final Scope scope;
 
   public DynamicArrayValue(Scope scope, Expression length, Expression elementFunction) {
@@ -24,22 +24,29 @@ public final class DynamicArrayValue extends EfficientEqualityBase implements Ex
     this.elementFunction = elementFunction;
   }
 
-  public Expression getLength() {
-    return length;
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitDynamicArray(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    DynamicArrayValue a = compareHashCodes(DynamicArrayValue.class, o);
+    return a != null && scope.equals(a.scope) && length.equals(a.length) &&
+        elementFunction.equals(a.elementFunction);
   }
 
   public Expression getElementFunction() {
     return elementFunction;
   }
 
-  @Override
-  public Scope getScope() {
-    return scope;
+  public Expression getLength() {
+    return length;
   }
 
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitDynamicArray(this);
+  public Scope getScope() {
+    return scope;
   }
 
   @Override
@@ -54,12 +61,5 @@ public final class DynamicArrayValue extends EfficientEqualityBase implements Ex
     hash += hash * 31 + elementFunction.hashCode();
     hash += hash * 31 + length.hashCode();
     return hash;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    DynamicArrayValue a = compareHashCodes(DynamicArrayValue.class, o);
-    return a != null && scope.equals(a.scope) && length.equals(a.length) &&
-        elementFunction.equals(a.elementFunction);
   }
 }

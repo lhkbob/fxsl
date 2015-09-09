@@ -20,36 +20,6 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
 @Immutable
 @LogicalEquality
 public final class TypePath extends EfficientEqualityBase {
-  private final VariableReference source;
-  private final List<Node> nodes;
-  private TypePath(VariableReference source, Collection<Node> nodes) {
-    this.source = source;
-    this.nodes = Collections.unmodifiableList(new ArrayList<>(nodes));
-  }
-
-  public static Builder newPath(VariableReference root) {
-    return new Builder(root);
-  }
-
-  public VariableReference getRoot() {
-    return source;
-  }
-
-  public List<Node> getPath() {
-    return nodes;
-  }
-
-  @Override
-  protected int computeHashCode() {
-    return source.hashCode() ^ nodes.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    TypePath t = compareHashCodes(TypePath.class, o);
-    return t != null && t.source.equals(source) && t.nodes.equals(nodes);
-  }
-
   public enum NodeType {
     ARRAY_COMPONENT(Void.class),
     FUNCTION_PARAMETER(Integer.class),
@@ -73,17 +43,22 @@ public final class TypePath extends EfficientEqualityBase {
   }
 
   public static class Builder {
-    // The nodes without metadata can be singletons since they are immutable and all instances are equivalent.
-    private static final Node ARRAY_COMPONENT = new Node(NodeType.ARRAY_COMPONENT, null);
-    private static final Node FUNCION_RETURN = new Node(NodeType.FUNCTION_RETURN, null);
-
-    private final VariableReference source;
     private final Stack<Node> nodes;
+    private final VariableReference source;
 
     private Builder(VariableReference source) {
       notNull("source", source);
       this.source = source;
       nodes = new Stack<>();
+    }
+
+    public TypePath create() {
+      return new TypePath(source, nodes);
+    }
+
+    public Builder pop() {
+      nodes.pop();
+      return this;
     }
 
     public Builder pushArrayComponent() {
@@ -118,25 +93,30 @@ public final class TypePath extends EfficientEqualityBase {
       return this;
     }
 
-    public Builder pop() {
-      nodes.pop();
-      return this;
-    }
-
-    public TypePath create() {
-      return new TypePath(source, nodes);
-    }
+    // The nodes without metadata can be singletons since they are immutable and all instances are equivalent.
+    private static final Node ARRAY_COMPONENT = new Node(NodeType.ARRAY_COMPONENT, null);
+    private static final Node FUNCION_RETURN = new Node(NodeType.FUNCTION_RETURN, null);
   }
 
   @Immutable
   @LogicalEquality(def = "Nodes are equal if their type and metadata are logically equal.")
   public static class Node {
-    private final NodeType type;
     private final Object metadata;
+    private final NodeType type;
 
     private Node(NodeType type, Object metadata) {
       this.type = type;
       this.metadata = metadata;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof Node)) {
+        return false;
+      }
+      Node t = (Node) o;
+      return t.type.equals(type) && (metadata == null ? t.metadata == null
+          : metadata.equals(t.metadata));
     }
 
     public int getIntData() {
@@ -159,16 +139,6 @@ public final class TypePath extends EfficientEqualityBase {
     }
 
     @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Node)) {
-        return false;
-      }
-      Node t = (Node) o;
-      return t.type.equals(type) && (metadata == null ? t.metadata == null
-          : metadata.equals(t.metadata));
-    }
-
-    @Override
     public String toString() {
       if (metadata == null) {
         return type.toString();
@@ -178,10 +148,39 @@ public final class TypePath extends EfficientEqualityBase {
     }
   }
 
+  private final List<Node> nodes;
+  private final VariableReference source;
+
+  private TypePath(VariableReference source, Collection<Node> nodes) {
+    this.source = source;
+    this.nodes = Collections.unmodifiableList(new ArrayList<>(nodes));
+  }
+
+  public static Builder newPath(VariableReference root) {
+    return new Builder(root);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    TypePath t = compareHashCodes(TypePath.class, o);
+    return t != null && t.source.equals(source) && t.nodes.equals(nodes);
+  }
+
+  public List<Node> getPath() {
+    return nodes;
+  }
+
+  public VariableReference getRoot() {
+    return source;
+  }
+
   @Override
   public String toString() {
     return String.format("%s%s", source, nodes);
   }
 
-
+  @Override
+  protected int computeHashCode() {
+    return source.hashCode() ^ nodes.hashCode();
+  }
 }

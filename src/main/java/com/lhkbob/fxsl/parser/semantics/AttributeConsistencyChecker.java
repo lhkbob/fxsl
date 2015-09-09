@@ -19,6 +19,13 @@ import java.util.Map;
  */
 public class AttributeConsistencyChecker implements SemanticsChecker {
   @Override
+  public boolean continueOnFailure() {
+    // Although all attributes with the same name need to have the same type, the code may otherwise
+    // be valid and can be processed.
+    return true;
+  }
+
+  @Override
   public void validate(Environment environment) throws SemanticsException {
     List<SemanticsProblem> problems = new ArrayList<>();
     AttributeVisitor visitor = new AttributeVisitor(environment);
@@ -30,13 +37,6 @@ public class AttributeConsistencyChecker implements SemanticsChecker {
       throw new SemanticsException(
           "References to named attributes have inconsistent types", problems);
     }
-  }
-
-  @Override
-  public boolean continueOnFailure() {
-    // Although all attributes with the same name need to have the same type, the code may otherwise
-    // be valid and can be processed.
-    return true;
   }
 
   private static class AttributeVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {

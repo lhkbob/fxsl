@@ -37,10 +37,9 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public final class FunctionCall extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
-
   private final Expression function;
   private final List<Expression> parameterValues;
+  private final Scope scope;
 
   /**
    * Create a new function call expression. `expression` will be invoked with each expression in
@@ -74,6 +73,18 @@ public final class FunctionCall extends EfficientEqualityBase implements Express
     this.parameterValues = Collections.unmodifiableList(new ArrayList<>(parameterValues));
   }
 
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitFunctionCall(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    FunctionCall v = compareHashCodes(FunctionCall.class, o);
+    return v != null && v.scope.equals(scope) && v.function.equals(function) &&
+        v.parameterValues.equals(parameterValues);
+  }
+
   /**
    * Get the function expression that is invoked. The type of this expression is a {@link
    * com.lhkbob.fxsl.lang.type.FunctionType}, {@link com.lhkbob.fxsl.lang.type.UnionType}, or
@@ -105,20 +116,6 @@ public final class FunctionCall extends EfficientEqualityBase implements Express
   }
 
   /**
-   * Get the number of parameters the function is invoked with. This will be at least 1 and at
-   * most the parameter count of the function. If it is less than the function's parameter count
-   * then this invocation curries the function, producing a new function that requires the remaining
-   * arguments before invoking the base function.
-   *
-   * The returned value is equal to `getParameterValues().size()`.
-   *
-   * @return The number of supplied arguments
-   */
-  public int getSuppliedParameterCount() {
-    return parameterValues.size();
-  }
-
-  /**
    * Get the argument values that the function is invoked with. This list will have at least one
    * element and at most as many elements as the parameter count of the function. If it is fewer
    * than that, the function call curries the base function. The list is ordered from first argument
@@ -139,9 +136,18 @@ public final class FunctionCall extends EfficientEqualityBase implements Express
     return scope;
   }
 
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitFunctionCall(this);
+  /**
+   * Get the number of parameters the function is invoked with. This will be at least 1 and at
+   * most the parameter count of the function. If it is less than the function's parameter count
+   * then this invocation curries the function, producing a new function that requires the remaining
+   * arguments before invoking the base function.
+   *
+   * The returned value is equal to `getParameterValues().size()`.
+   *
+   * @return The number of supplied arguments
+   */
+  public int getSuppliedParameterCount() {
+    return parameterValues.size();
   }
 
   @Override
@@ -169,12 +175,5 @@ public final class FunctionCall extends EfficientEqualityBase implements Express
     result += 31 * result + parameterValues.hashCode();
     result += 31 * result + scope.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    FunctionCall v = compareHashCodes(FunctionCall.class, o);
-    return v != null && v.scope.equals(scope) && v.function.equals(function) &&
-        v.parameterValues.equals(parameterValues);
   }
 }

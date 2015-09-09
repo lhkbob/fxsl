@@ -25,20 +25,6 @@ public class InvalidExpressionException extends RuntimeException {
     this.e = e;
   }
 
-  private static String getMessage(Expression e, String msg) {
-    StringBuilder sb = new StringBuilder();
-    if (msg != null && msg.length() > 0) {
-      sb.append(msg);
-    }
-    if (e != null) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      sb.append("expr: ").append(e);
-    }
-    return sb.toString();
-  }
-
   public InvalidExpressionException(Throwable t) {
     this("", t);
   }
@@ -57,5 +43,19 @@ public class InvalidExpressionException extends RuntimeException {
 
   public Expression getExpression() {
     return e;
+  }
+
+  private static String getMessage(Expression e, String msg) {
+    StringBuilder sb = new StringBuilder();
+    if (msg != null && msg.length() > 0) {
+      sb.append(msg);
+    }
+    if (e != null) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append("expr: ").append(e);
+    }
+    return sb.toString();
   }
 }

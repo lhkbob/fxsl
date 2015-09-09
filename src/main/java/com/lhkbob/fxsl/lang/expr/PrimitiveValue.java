@@ -19,8 +19,8 @@ import com.lhkbob.fxsl.util.Immutable;
  */
 @Immutable
 public final class PrimitiveValue extends EfficientEqualityBase implements Expression {
-  private final Object value;
   private final transient PrimitiveType type;
+  private final Object value;
 
   /**
    * Create a new primitive value that will have the FLOAT primitive type and has the given
@@ -57,6 +57,30 @@ public final class PrimitiveValue extends EfficientEqualityBase implements Expre
     type = PrimitiveType.BOOL;
   }
 
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitPrimitive(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    PrimitiveValue v = compareHashCodes(PrimitiveValue.class, o);
+    return v.value.equals(value);
+  }
+
+  @Override
+  public Scope getScope() {
+    return Scope.NATIVE_SCOPE;
+  }
+
+  /**
+   * @return The known primitive type of this value, determined by the constructor that created this
+   * instance.
+   */
+  public PrimitiveType getType() {
+    return type;
+  }
+
   /**
    * Get the concrete value of this primitive. This will be an instance of {@link
    * java.lang.Integer} if the expression's type is INT, it will be an instance of {@link
@@ -72,24 +96,6 @@ public final class PrimitiveValue extends EfficientEqualityBase implements Expre
     return value;
   }
 
-  /**
-   * @return The known primitive type of this value, determined by the constructor that created this
-   * instance.
-   */
-  public PrimitiveType getType() {
-    return type;
-  }
-
-  @Override
-  public Scope getScope() {
-    return Scope.NATIVE_SCOPE;
-  }
-
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitPrimitive(this);
-  }
-
   @Override
   public String toString() {
     return value.toString();
@@ -98,11 +104,5 @@ public final class PrimitiveValue extends EfficientEqualityBase implements Expre
   @Override
   protected int computeHashCode() {
     return value.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    PrimitiveValue v = compareHashCodes(PrimitiveValue.class, o);
-    return v.value.equals(value);
   }
 }

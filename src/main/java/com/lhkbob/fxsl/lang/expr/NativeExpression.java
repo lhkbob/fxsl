@@ -24,8 +24,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class NativeExpression implements Expression {
-  private final Type type;
   private final String name;
+  private final Type type;
 
   /**
    * Create a new native expression that results in a value of the given `type`.
@@ -44,12 +44,30 @@ public final class NativeExpression implements Expression {
     this.name = name;
   }
 
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitNativeExpression(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return o == this;
+  }
+
   /**
    * @return The readable name/description of this native expression.
    */
   public String getName() {
     return name;
   }
+
+  @Override
+  public Scope getScope() {
+    return Scope.NATIVE_SCOPE;
+  }
+
+  // Although these are the same definitions in Object, we implement them here to bypass any
+  // annotation validation performed based on @LogicalEquality
 
   /**
    * @return The known type of the expression, which will only refer to primitive types and concrete
@@ -60,26 +78,8 @@ public final class NativeExpression implements Expression {
   }
 
   @Override
-  public Scope getScope() {
-    return Scope.NATIVE_SCOPE;
-  }
-
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitNativeExpression(this);
-  }
-
-  // Although these are the same definitions in Object, we implement them here to bypass any
-  // annotation validation performed based on @LogicalEquality
-
-  @Override
   public int hashCode() {
     return System.identityHashCode(this);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    return o == this;
   }
 
   @Override

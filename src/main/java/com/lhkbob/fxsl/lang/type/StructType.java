@@ -50,6 +50,17 @@ public final class StructType extends EfficientEqualityBase implements Type {
     this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
   }
 
+  @Override
+  public <T> T accept(Type.Visitor<T> visitor) {
+    return visitor.visitStructType(this);
+  }
+
+  @Override
+  public boolean equals(Object t) {
+    StructType o = compareHashCodes(StructType.class, t);
+    return o != null && o.fields.equals(fields);
+  }
+
   /**
    * Get the type of the field specified by `name`. If the field name is not a valid field for
    * this type then `null` is returned.
@@ -73,11 +84,6 @@ public final class StructType extends EfficientEqualityBase implements Type {
   }
 
   @Override
-  public <T> T accept(Type.Visitor<T> visitor) {
-    return visitor.visitStructType(this);
-  }
-
-  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("{");
@@ -97,11 +103,5 @@ public final class StructType extends EfficientEqualityBase implements Type {
   @Override
   protected int computeHashCode() {
     return fields.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    StructType o = compareHashCodes(StructType.class, t);
-    return o != null && o.fields.equals(fields);
   }
 }

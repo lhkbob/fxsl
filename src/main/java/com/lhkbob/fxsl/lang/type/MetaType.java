@@ -47,6 +47,11 @@ public class MetaType implements Type {
     return visitor.visitMetaType(this);
   }
 
+  @Override
+  public boolean equals(Object t) {
+    return t == this;
+  }
+
   /**
    * Get the scope that this meta type is valid within.
    *
@@ -59,11 +64,6 @@ public class MetaType implements Type {
   @Override
   public int hashCode() {
     return System.identityHashCode(this);
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    return t == this;
   }
 
   @Override

@@ -17,6 +17,11 @@ import java.util.Stack;
  */
 public class CyclicTypeChecker implements SemanticsChecker {
   @Override
+  public boolean continueOnFailure() {
+    return false;
+  }
+
+  @Override
   public void validate(Environment environment) throws SemanticsException {
     CyclicVisitor visitor = new CyclicVisitor(environment);
     List<SemanticsProblem> allProblems = new ArrayList<>();
@@ -29,14 +34,9 @@ public class CyclicTypeChecker implements SemanticsChecker {
     }
   }
 
-  @Override
-  public boolean continueOnFailure() {
-    return false;
-  }
-
   private static class CyclicVisitor extends DefaultTypeVisitor<List<SemanticsProblem>> {
-    private final Environment environment;
     private final Stack<AliasType> aliasStack;
+    private final Environment environment;
 
     public CyclicVisitor(Environment env) {
       environment = env;
@@ -47,7 +47,8 @@ public class CyclicTypeChecker implements SemanticsChecker {
     public List<SemanticsProblem> visitAliasType(AliasType alias) {
       if (aliasStack.contains(alias)) {
         // A cycle exists in a type's definition
-        return Collections.<SemanticsProblem>singletonList(new SemanticsProblem.TypeProblem("Type is cyclic", alias));
+        return Collections.<SemanticsProblem>singletonList(
+            new SemanticsProblem.TypeProblem("Type is cyclic", alias));
       }
 
       // Mark that this alias as being processed
@@ -55,7 +56,8 @@ public class CyclicTypeChecker implements SemanticsChecker {
 
       Declaration<Type> link = environment.getDeclaredType(alias.getScope(), alias.getLabel());
       if (link == null) {
-        return Collections.<SemanticsProblem>singletonList(new SemanticsProblem.TypeProblem("Aliased type is undefined", alias));
+        return Collections.<SemanticsProblem>singletonList(
+            new SemanticsProblem.TypeProblem("Aliased type is undefined", alias));
       }
 
       try {
@@ -66,7 +68,8 @@ public class CyclicTypeChecker implements SemanticsChecker {
     }
 
     @Override
-    protected List<SemanticsProblem> combine(List<SemanticsProblem> old, List<SemanticsProblem> newer) {
+    protected List<SemanticsProblem> combine(
+        List<SemanticsProblem> old, List<SemanticsProblem> newer) {
       return SemanticsException.combineProblems(old, newer);
     }
   }

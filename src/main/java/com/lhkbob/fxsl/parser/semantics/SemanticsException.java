@@ -30,30 +30,6 @@ public class SemanticsException extends Exception {
     this.problems = Collections.unmodifiableList(new ArrayList<>(problems));
   }
 
-  private static String formMessage(
-      String overallMessage, Collection<? extends SemanticsProblem> problems) {
-    // If no problems are given, return the overall message regardless of what it is (even if it's blank).
-    // This case is clearly when the thrower has figured out the explicit message to give.
-    if (problems.isEmpty()) {
-      return overallMessage;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    if (overallMessage != null && !overallMessage.isEmpty()) {
-      // Use overallMessage as the banner
-      sb.append(overallMessage).append(":\n\n");
-    } else {
-      // Use a standard banner
-      sb.append("Semantic failures:\n\n");
-    }
-
-    for (SemanticsProblem p : problems) {
-      sb.append(p).append("\n");
-    }
-
-    return sb.toString();
-  }
-
   public SemanticsException(Throwable cause, SemanticsProblem... problems) {
     this(cause, Arrays.asList(problems));
   }
@@ -88,5 +64,29 @@ public class SemanticsException extends Exception {
 
   public List<SemanticsProblem> getProblems() {
     return problems;
+  }
+
+  private static String formMessage(
+      String overallMessage, Collection<? extends SemanticsProblem> problems) {
+    // If no problems are given, return the overall message regardless of what it is (even if it's blank).
+    // This case is clearly when the thrower has figured out the explicit message to give.
+    if (problems.isEmpty()) {
+      return overallMessage;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    if (overallMessage != null && !overallMessage.isEmpty()) {
+      // Use overallMessage as the banner
+      sb.append(overallMessage).append(":\n\n");
+    } else {
+      // Use a standard banner
+      sb.append("Semantic failures:\n\n");
+    }
+
+    for (SemanticsProblem p : problems) {
+      sb.append(p).append("\n");
+    }
+
+    return sb.toString();
   }
 }

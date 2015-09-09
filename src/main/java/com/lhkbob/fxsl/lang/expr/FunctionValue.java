@@ -24,10 +24,9 @@ import static com.lhkbob.fxsl.util.Preconditions.validCollection;
  */
 @Immutable
 public final class FunctionValue extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
-
   private final List<String> parameters;
   private final Expression returnValue;
+  private final Scope scope;
 
   /**
    * Create a new function value that has the signature described by `parameterNames`
@@ -54,6 +53,25 @@ public final class FunctionValue extends EfficientEqualityBase implements Expres
     this.parameters = Collections.unmodifiableList(new ArrayList<>(parameterNames));
     this.returnValue = returnValue;
     this.scope = scope;
+  }
+
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitFunction(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    FunctionValue v = compareHashCodes(FunctionValue.class, o);
+    return v != null && v.scope.equals(scope) && v.parameters.equals(parameters) &&
+        v.returnValue.equals(returnValue);
+  }
+
+  /**
+   * @return The scope of the function body, which includes the parameter expression definitions.
+   */
+  public Scope getBodyScope() {
+    return returnValue.getScope();
   }
 
   /**
@@ -92,21 +110,9 @@ public final class FunctionValue extends EfficientEqualityBase implements Expres
     return returnValue;
   }
 
-  /**
-   * @return The scope of the function body, which includes the parameter expression definitions.
-   */
-  public Scope getBodyScope() {
-    return returnValue.getScope();
-  }
-
   @Override
   public Scope getScope() {
     return scope;
-  }
-
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitFunction(this);
   }
 
   @Override
@@ -132,12 +138,5 @@ public final class FunctionValue extends EfficientEqualityBase implements Expres
     result += 31 * result + returnValue.hashCode();
     result += 31 * result + scope.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    FunctionValue v = compareHashCodes(FunctionValue.class, o);
-    return v != null && v.scope.equals(scope) && v.parameters.equals(parameters) &&
-        v.returnValue.equals(returnValue);
   }
 }

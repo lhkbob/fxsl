@@ -25,8 +25,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class StructValue extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
   private final Map<String, Expression> fields;
+  private final Scope scope;
 
   /**
    * Create a new struct value that is described completely by the map. The keys in the map are
@@ -55,6 +55,17 @@ public final class StructValue extends EfficientEqualityBase implements Expressi
 
     this.scope = scope;
     this.fields = Collections.unmodifiableMap(new HashMap<>(fields));
+  }
+
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitStruct(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    StructValue v = compareHashCodes(StructValue.class, o);
+    return v != null && v.scope.equals(scope) && v.fields.equals(fields);
   }
 
   /**
@@ -86,11 +97,6 @@ public final class StructValue extends EfficientEqualityBase implements Expressi
   }
 
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitStruct(this);
-  }
-
-  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("{");
@@ -110,11 +116,5 @@ public final class StructValue extends EfficientEqualityBase implements Expressi
   @Override
   protected int computeHashCode() {
     return fields.hashCode() ^ scope.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    StructValue v = compareHashCodes(StructValue.class, o);
-    return v != null && v.scope.equals(scope) && v.fields.equals(fields);
   }
 }

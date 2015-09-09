@@ -30,6 +30,47 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
 @Immutable
 public final class ArrayType extends EfficientEqualityBase implements Type {
 
+  @Immutable
+  public static final class Length {
+    private final int length;
+
+    // FIXME might be nice to specify a label if it came from actual fxsl code
+    public Length(int length) {
+      this.length = length;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof Length)) {
+        return false;
+      }
+      Length l = (Length) o;
+      return l.length == length;
+    }
+
+    public int get() {
+      return length;
+    }
+
+    @Override
+    public int hashCode() {
+      return length;
+    }
+
+    public boolean isWildcard() {
+      return length <= 0;
+    }
+
+    @Override
+    public String toString() {
+      if (isWildcard()) {
+        return "__" + Integer.toHexString(-length);
+      } else {
+        return Integer.toString(length);
+      }
+    }
+  }
+
   private final Type componentType;
   private final Length length;
 
@@ -49,6 +90,17 @@ public final class ArrayType extends EfficientEqualityBase implements Type {
 
     this.componentType = componentType;
     this.length = length;
+  }
+
+  @Override
+  public <T> T accept(Type.Visitor<T> visitor) {
+    return visitor.visitArrayType(this);
+  }
+
+  @Override
+  public boolean equals(Object t) {
+    ArrayType a = compareHashCodes(ArrayType.class, t);
+    return a != null && a.length.equals(length) && a.componentType.equals(componentType);
   }
 
   /**
@@ -71,8 +123,8 @@ public final class ArrayType extends EfficientEqualityBase implements Type {
   }
 
   @Override
-  public <T> T accept(Type.Visitor<T> visitor) {
-    return visitor.visitArrayType(this);
+  public String toString() {
+    return String.format("%s[%s]", componentType, length);
   }
 
   @Override
@@ -81,57 +133,5 @@ public final class ArrayType extends EfficientEqualityBase implements Type {
     hash += hash * 37 + componentType.hashCode();
     hash += hash * 37 + length.hashCode();
     return hash;
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    ArrayType a = compareHashCodes(ArrayType.class, t);
-    return a != null && a.length.equals(length) && a.componentType.equals(componentType);
-  }
-
-  @Immutable
-  public static final class Length {
-    private final int length;
-
-    // FIXME might be nice to specify a label if it came from actual fxsl code
-    public Length(int length) {
-      this.length = length;
-    }
-
-    public int get() {
-      return length;
-    }
-
-    @Override
-    public int hashCode() {
-      return length;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Length)) {
-        return false;
-      }
-      Length l = (Length) o;
-      return l.length == length;
-    }
-
-    @Override
-    public String toString() {
-      if (isWildcard()) {
-        return "__" + Integer.toHexString(-length);
-      } else {
-        return Integer.toString(length);
-      }
-    }
-
-    public boolean isWildcard() {
-      return length <= 0;
-    }
-  }
-
-  @Override
-  public String toString() {
-    return String.format("%s[%s]", componentType, length);
   }
 }

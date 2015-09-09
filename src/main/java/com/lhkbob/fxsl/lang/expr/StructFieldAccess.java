@@ -20,9 +20,9 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class StructFieldAccess extends EfficientEqualityBase implements Expression {
+  private final String field;
   private final Scope scope;
   private final Expression struct;
-  private final String field;
 
   /**
    * Create a new struct field access expression that accesses `field` from the given expression.
@@ -49,15 +49,15 @@ public final class StructFieldAccess extends EfficientEqualityBase implements Ex
     this.field = field;
   }
 
-  /**
-   * Get the expression that evaluates to the struct value having one of its fields accessed. The
-   * type of this expression will be a {@link com.lhkbob.fxsl.lang.type.StructType} or a {@link
-   * MetaType}.
-   *
-   * @return The struct expression
-   */
-  public Expression getStruct() {
-    return struct;
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitFieldAccess(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    StructFieldAccess a = compareHashCodes(StructFieldAccess.class, o);
+    return a != null && a.scope.equals(scope) && a.struct.equals(struct) && a.field.equals(field);
   }
 
   /**
@@ -76,9 +76,15 @@ public final class StructFieldAccess extends EfficientEqualityBase implements Ex
     return scope;
   }
 
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitFieldAccess(this);
+  /**
+   * Get the expression that evaluates to the struct value having one of its fields accessed. The
+   * type of this expression will be a {@link com.lhkbob.fxsl.lang.type.StructType} or a {@link
+   * MetaType}.
+   *
+   * @return The struct expression
+   */
+  public Expression getStruct() {
+    return struct;
   }
 
   @Override
@@ -93,11 +99,5 @@ public final class StructFieldAccess extends EfficientEqualityBase implements Ex
     result += 31 * result + field.hashCode();
     result += 31 * result + scope.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    StructFieldAccess a = compareHashCodes(StructFieldAccess.class, o);
-    return a != null && a.scope.equals(scope) && a.struct.equals(struct) && a.field.equals(field);
   }
 }

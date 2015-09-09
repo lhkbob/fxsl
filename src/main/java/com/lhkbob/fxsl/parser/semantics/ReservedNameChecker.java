@@ -16,6 +16,13 @@ public class ReservedNameChecker implements SemanticsChecker {
   public static final String RESERVED_PREFIX = "__";
 
   @Override
+  public boolean continueOnFailure() {
+    // Although we don't want people to declare variables with reserved names, because unintended
+    // consequences can occur, it's pretty rare so continue forwards and accumulate more errors.
+    return true;
+  }
+
+  @Override
   public void validate(Environment environment) throws SemanticsException {
     List<SemanticsProblem> problems = new ArrayList<>();
     for (Declaration<Expression> var : EnvironmentUtils.getAllVariables(environment)) {
@@ -36,12 +43,5 @@ public class ReservedNameChecker implements SemanticsChecker {
     if (!problems.isEmpty()) {
       throw new SemanticsException("Reserved names check failed", problems);
     }
-  }
-
-  @Override
-  public boolean continueOnFailure() {
-    // Although we don't want people to declare variables with reserved names, because unintended
-    // consequences can occur, it's pretty rare so continue forwards and accumulate more errors.
-    return true;
   }
 }

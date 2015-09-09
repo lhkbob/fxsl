@@ -38,15 +38,13 @@ public class Parser {
     return parse(new ANTLRInputStream(content));
   }
 
-  private Expression parse(ANTLRInputStream in) {
-    FXSLLexer lexer = new FXSLLexer(in);
-    FXSLParser parser = new FXSLParser(new CommonTokenStream(lexer));
-
-    ExpressionVisitor visitor = new ExpressionVisitor(context);
-    return visitor.visit(parser.stmList());
+  public Expression parseFile(File file) throws IOException {
+    try (FileInputStream in = new FileInputStream(file)) {
+      return parseStream(in);
+    }
   }
 
-  public Expression parseFile(File file) throws IOException {
+  public Expression parseFile(String file) throws IOException {
     try (FileInputStream in = new FileInputStream(file)) {
       return parseStream(in);
     }
@@ -57,9 +55,11 @@ public class Parser {
     return parse(new ANTLRInputStream(buffer));
   }
 
-  public Expression parseFile(String file) throws IOException {
-    try (FileInputStream in = new FileInputStream(file)) {
-      return parseStream(in);
-    }
+  private Expression parse(ANTLRInputStream in) {
+    FXSLLexer lexer = new FXSLLexer(in);
+    FXSLParser parser = new FXSLParser(new CommonTokenStream(lexer));
+
+    ExpressionVisitor visitor = new ExpressionVisitor(context);
+    return visitor.visit(parser.stmList());
   }
 }

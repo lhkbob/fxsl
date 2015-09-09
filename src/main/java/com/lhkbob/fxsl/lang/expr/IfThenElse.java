@@ -9,10 +9,10 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  *
  */
 public class IfThenElse extends EfficientEqualityBase implements Expression {
-  private final Scope scope;
   private final Expression condition;
-  private final Expression trueExpr;
   private final Expression falseExpr;
+  private final Scope scope;
+  private final Expression trueExpr;
 
   public IfThenElse(Scope scope, Expression condition, Expression trueExpr, Expression falseExpr) {
     notNull("scope", scope);
@@ -26,12 +26,20 @@ public class IfThenElse extends EfficientEqualityBase implements Expression {
     this.falseExpr = falseExpr;
   }
 
-  public Expression getCondition() {
-    return condition;
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitIfThenElse(this);
   }
 
-  public Expression getTrueExpression() {
-    return trueExpr;
+  @Override
+  public boolean equals(Object o) {
+    IfThenElse t = compareHashCodes(IfThenElse.class, o);
+    return t != null && t.scope.equals(scope) && t.condition.equals(condition) && t.trueExpr
+        .equals(trueExpr) && t.falseExpr.equals(falseExpr);
+  }
+
+  public Expression getCondition() {
+    return condition;
   }
 
   public Expression getFalseExpression() {
@@ -43,9 +51,13 @@ public class IfThenElse extends EfficientEqualityBase implements Expression {
     return scope;
   }
 
+  public Expression getTrueExpression() {
+    return trueExpr;
+  }
+
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitIfThenElse(this);
+  public String toString() {
+    return String.format("if %s then %s else %s", condition, trueExpr, falseExpr);
   }
 
   @Override
@@ -56,16 +68,5 @@ public class IfThenElse extends EfficientEqualityBase implements Expression {
     hash += 31 * hash + trueExpr.hashCode();
     hash += 31 * hash + falseExpr.hashCode();
     return hash;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    IfThenElse t = compareHashCodes(IfThenElse.class, o);
-    return t != null && t.scope.equals(scope) && t.condition.equals(condition) && t.trueExpr.equals(trueExpr) && t.falseExpr.equals(falseExpr);
-  }
-
-  @Override
-  public String toString() {
-    return String.format("if %s then %s else %s", condition, trueExpr, falseExpr);
   }
 }

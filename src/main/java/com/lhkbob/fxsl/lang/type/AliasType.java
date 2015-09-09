@@ -43,15 +43,15 @@ public class AliasType extends EfficientEqualityBase implements Type {
     this.scope = scope;
   }
 
-  /**
-   * Get the scope the alias was referenced from. Note that the `type <name> = ` syntax does not
-   * create an alias type associated with `name`. References to `name` throughout the rest of the
-   * code will refer back the type that was defined there (assuming not shadowed by another scope).
-   *
-   * @return The scope that defined this type
-   */
-  public Scope getScope() {
-    return scope;
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitAliasType(this);
+  }
+
+  @Override
+  public boolean equals(Object t) {
+    AliasType a = compareHashCodes(AliasType.class, t);
+    return a != null && a.scope.equals(scope) && a.label.equals(label);
   }
 
   /**
@@ -63,24 +63,25 @@ public class AliasType extends EfficientEqualityBase implements Type {
     return label;
   }
 
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitAliasType(this);
+  /**
+   * Get the scope the alias was referenced from. Note that the `type <name> = ` syntax does not
+   * create an alias type associated with `name`. References to `name` throughout the rest of the
+   * code will refer back the type that was defined there (assuming not shadowed by another scope).
+   *
+   * @return The scope that defined this type
+   */
+  public Scope getScope() {
+    return scope;
   }
 
   @Override
   public String toString() {
     return String.format("%s (in %s)", label, scope);
   }
+//
 
   @Override
   protected int computeHashCode() {
     return label.hashCode() ^ scope.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object t) {
-    AliasType a = compareHashCodes(AliasType.class, t);
-    return a != null && a.scope.equals(scope) && a.label.equals(label);
   }
 }

@@ -50,6 +50,17 @@ public final class VariableReference extends EfficientEqualityBase implements Ex
     this.scope = scope;
   }
 
+  @Override
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitVariable(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    VariableReference t = compareHashCodes(VariableReference.class, o);
+    return t != null && t.name.equals(name) && t.scope.equals(scope);
+  }
+
   /**
    * Get the scope that this variable is referenced within. The reference scope determines which
    * actual value these expressions resolve to based on the variable name.
@@ -59,11 +70,6 @@ public final class VariableReference extends EfficientEqualityBase implements Ex
   @Override
   public Scope getScope() {
     return scope;
-  }
-
-  @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitVariable(this);
   }
 
   /**
@@ -86,11 +92,5 @@ public final class VariableReference extends EfficientEqualityBase implements Ex
     result += 31 * result + name.hashCode();
     result += 31 * result + scope.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    VariableReference t = compareHashCodes(VariableReference.class, o);
-    return t != null && t.name.equals(name) && t.scope.equals(scope);
   }
 }

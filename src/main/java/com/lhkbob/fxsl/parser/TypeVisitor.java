@@ -41,26 +41,6 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
   }
 
   @Override
-  public Type visitUnionType(@NotNull FXSLParser.UnionTypeContext ctx) {
-    List<Type> types = new ArrayList<>();
-    int element = 0;
-    for (FXSLParser.TypeContext t : ctx.type()) {
-      if (context.isInsideVariableDeclaration()) {
-        context.getCurrentTypePath().pushUnionElement(element);
-      }
-      try {
-        types.add(t.accept(this));
-      } finally {
-        if (context.isInsideVariableDeclaration()) {
-          context.getCurrentTypePath().pop();
-        }
-      }
-      element++;
-    }
-    return new UnionType(types);
-  }
-
-  @Override
   public Type visitAliasType(@NotNull FXSLParser.AliasTypeContext ctx) {
     // Alias types are not part of type paths
     String name = ctx.Identifier().getText();
@@ -125,25 +105,6 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
     }
   }
 
-  private int getLengthID(String label) {
-    Map<String, Integer> map = lengthLabelMap.get(context.getCurrentScope());
-    if (map == null) {
-      map = new HashMap<>();
-      lengthLabelMap.put(context.getCurrentScope(), map);
-    }
-    Integer id = map.get(label);
-    if (id == null) {
-      // Assign a new id, this is only ever called regarding a label in the current scope.
-      // If there's a higher scope with the same label, this is a new parameter and there's no need to
-      // recurse up parent scopes. Type inference may well bind them to the exact same thing, but that
-      // is handled later.
-      id = lengthWildcardCounter--; // go negative for wildcard ids
-      map.put(label, id);
-    }
-
-    return id;
-  }
-
   @Override
   public Type visitFunctionType(@NotNull FXSLParser.FunctionTypeContext ctx) {
     int param = 0;
@@ -194,5 +155,44 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
       }
     }
     return new StructType(fields);
+  }
+
+  @Override
+  public Type visitUnionType(@NotNull FXSLParser.UnionTypeContext ctx) {
+    List<Type> types = new ArrayList<>();
+    int element = 0;
+    for (FXSLParser.TypeContext t : ctx.type()) {
+      if (context.isInsideVariableDeclaration()) {
+        context.getCurrentTypePath().pushUnionElement(element);
+      }
+      try {
+        types.add(t.accept(this));
+      } finally {
+        if (context.isInsideVariableDeclaration()) {
+          context.getCurrentTypePath().pop();
+        }
+      }
+      element++;
+    }
+    return new UnionType(types);
+  }
+
+  private int getLengthID(String label) {
+    Map<String, Integer> map = lengthLabelMap.get(context.getCurrentScope());
+    if (map == null) {
+      map = new HashMap<>();
+      lengthLabelMap.put(context.getCurrentScope(), map);
+    }
+    Integer id = map.get(label);
+    if (id == null) {
+      // Assign a new id, this is only ever called regarding a label in the current scope.
+      // If there's a higher scope with the same label, this is a new parameter and there's no need to
+      // recurse up parent scopes. Type inference may well bind them to the exact same thing, but that
+      // is handled later.
+      id = lengthWildcardCounter--; // go negative for wildcard ids
+      map.put(label, id);
+    }
+
+    return id;
   }
 }

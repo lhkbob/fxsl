@@ -23,8 +23,8 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
  */
 @Immutable
 public final class Parameter extends EfficientEqualityBase implements Expression {
-  private final String name;
   private final FunctionValue function;
+  private final String name;
 
   /**
    * @param function
@@ -45,13 +45,14 @@ public final class Parameter extends EfficientEqualityBase implements Expression
   }
 
   @Override
-  public Scope getScope() {
-    return function.getBodyScope();
+  public <T> T accept(Visitor<T> visitor) {
+    return visitor.visitParameter(this);
   }
 
   @Override
-  public <T> T accept(Visitor<T> visitor) {
-    return visitor.visitParameter(this);
+  public boolean equals(Object o) {
+    Parameter t = compareHashCodes(Parameter.class, o);
+    return t != null && t.name.equals(name) && t.function.equals(function);
   }
 
   /**
@@ -61,6 +62,11 @@ public final class Parameter extends EfficientEqualityBase implements Expression
    */
   public String getParameterName() {
     return name;
+  }
+
+  @Override
+  public Scope getScope() {
+    return function.getBodyScope();
   }
 
   @Override
@@ -74,11 +80,5 @@ public final class Parameter extends EfficientEqualityBase implements Expression
     result += 31 * result + name.hashCode();
     result += 31 * result + function.hashCode();
     return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    Parameter t = compareHashCodes(Parameter.class, o);
-    return t != null && t.name.equals(name) && t.function.equals(function);
   }
 }
