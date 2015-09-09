@@ -119,7 +119,7 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
       // Create an expression in the current scope for this array, using the current type path
       TypePath path = context.getCurrentTypePath().create();
       Expression length = new ArrayLength(context.getCurrentScope(), path);
-      context.getEnvironment().addVariable(context.getCurrentScope(), lengthName, length);
+      context.getEnvironment().addDeclaredVariable(context.getCurrentScope(), lengthName, length);
       context.getEnvironment().setExpressionType(length, PrimitiveType.INT);
       return new ArrayType(componentType, new ArrayType.Length(lengthID));
     }

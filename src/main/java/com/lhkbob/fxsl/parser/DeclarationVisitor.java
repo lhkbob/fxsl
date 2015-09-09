@@ -37,7 +37,7 @@ public class DeclarationVisitor extends FXSLBaseVisitor<Void> {
       }
     }
 
-    context.getEnvironment().addVariable(context.getCurrentScope(), varName, expression);
+    context.getEnvironment().addDeclaredVariable(context.getCurrentScope(), varName, expression);
     return null;
   }
 
@@ -45,7 +45,7 @@ public class DeclarationVisitor extends FXSLBaseVisitor<Void> {
   public Void visitTypeDef(@NotNull FXSLParser.TypeDefContext ctx) {
     String typeName = ctx.Identifier().getText();
     Type type = ctx.type().accept(context.getTypeVisitor());
-    context.getEnvironment().addAliasedType(context.getCurrentScope(), typeName, type);
+    context.getEnvironment().addDeclaredType(context.getCurrentScope(), typeName, type);
     return null;
   }
 }

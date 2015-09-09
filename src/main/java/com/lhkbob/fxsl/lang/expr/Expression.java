@@ -135,5 +135,7 @@ public interface Expression {
     T visitUniform(Uniform uniform);
 
     T visitAttribute(Attribute attr);
+
+    T visitIfThenElse(IfThenElse test);
   }
 }

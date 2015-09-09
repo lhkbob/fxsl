@@ -8,6 +8,7 @@ import com.lhkbob.fxsl.lang.expr.DynamicArrayValue;
 import com.lhkbob.fxsl.lang.expr.Expression;
 import com.lhkbob.fxsl.lang.expr.FunctionCall;
 import com.lhkbob.fxsl.lang.expr.FunctionValue;
+import com.lhkbob.fxsl.lang.expr.IfThenElse;
 import com.lhkbob.fxsl.lang.expr.Parameter;
 import com.lhkbob.fxsl.lang.expr.PrimitiveValue;
 import com.lhkbob.fxsl.lang.expr.StructFieldAccess;
@@ -164,7 +165,7 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
             context.finishVariableDeclaration();
           }
         }
-        context.getEnvironment().addVariable(funcScope, parameterNames.get(i), param);
+        context.getEnvironment().addDeclaredVariable(funcScope, parameterNames.get(i), param);
       }
 
       return function;
@@ -241,6 +242,14 @@ public class ExpressionVisitor extends FXSLBaseVisitor<Expression> {
     Expression length = ctx.length.accept(this);
     Expression elements = ctx.func.accept(this);
     return new DynamicArrayValue(context.getCurrentScope(), length, elements);
+  }
+
+  @Override
+  public Expression visitIfThenElse(@NotNull FXSLParser.IfThenElseContext ctx) {
+    Expression condition = ctx.condition.accept(this);
+    Expression trueExpr = ctx.trueExpr.accept(this);
+    Expression falseExpr = ctx.falseExpr.accept(this);
+    return new IfThenElse(context.getCurrentScope(), condition, trueExpr, falseExpr);
   }
 
 }

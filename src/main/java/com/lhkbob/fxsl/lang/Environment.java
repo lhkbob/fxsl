@@ -303,15 +303,15 @@ public class Environment {
     return rootScope;
   }
 
-  public Type getAliasedType(Scope scope, String name) {
+  public Declaration<Type> getDeclaredType(Scope scope, String name) {
     return getDefinition(Type.class, scope, name, true);
   }
 
-  public void addAliasedType(Scope scope, String name, Type type) {
+  public void addDeclaredType(Scope scope, String name, Type type) {
     addDefinition(Type.class, scope, name, type);
   }
 
-  public void setAliasedType(Scope scope, String name, Type type) {
+  public void setDeclaredType(Scope scope, String name, Type type) {
     setDefinition(Type.class, scope, name, type);
   }
 
@@ -342,15 +342,15 @@ public class Environment {
     }
   }
 
-  public Expression getVariable(Scope scope, String name) {
+  public Declaration<Expression> getDeclaredVariable(Scope scope, String name) {
     return getDefinition(Expression.class, scope, name, true);
   }
 
-  public void addVariable(Scope scope, String name, Expression expression) {
+  public void addDeclaredVariable(Scope scope, String name, Expression expression) {
     addDefinition(Expression.class, scope, name, expression);
   }
 
-  public void setVariable(Scope scope, String name, Expression expression) {
+  public void setDeclaredVariable(Scope scope, String name, Expression expression) {
     setDefinition(Expression.class, scope, name, expression);
   }
 
@@ -416,7 +416,7 @@ public class Environment {
     }
   }
 
-  private <T> T getDefinitionInEnvironment(
+  private <T> Declaration<T> getDefinitionInEnvironment(
       Class<T> defnType, Scope scope, String name, boolean recurseScopes) {
     ScopeRules rules = scopeRules.get(scope);
     T def = (rules != null ? rules.getDefinition(defnType, name) : null);
@@ -424,12 +424,12 @@ public class Environment {
       // stay within the current environment
       return getDefinitionInEnvironment(defnType, scope.getParent(), name, true);
     } else {
-      return def;
+      return new Declaration<>(scope, name, def);
     }
   }
 
-  private <T> T getDefinition(Class<T> defnType, Scope scope, String name, boolean recurseScopes) {
-    T def = getDefinitionInEnvironment(defnType, scope, name, recurseScopes);
+  private <T> Declaration<T> getDefinition(Class<T> defnType, Scope scope, String name, boolean recurseScopes) {
+    Declaration<T> def = getDefinitionInEnvironment(defnType, scope, name, recurseScopes);
     if (def == null && parent != null) {
       return parent.getDefinition(defnType, scope, name, recurseScopes);
     } else {

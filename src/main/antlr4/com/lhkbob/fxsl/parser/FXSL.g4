@@ -35,6 +35,7 @@ def : TYPE Identifier ASSIGN type #TypeDef
 // Expressions
 
 expr : LET def (SEMI def)* IN expr #Let
+     | IF condition=expr THEN trueExpr=expr ELSE falseExpr=expr #IfThenElse
      | func=expr LPAREN params+=expr (COMMA params+=expr)* RPAREN #FunctionCall
      | value=expr LBRACE field=Identifier RBRACE #FieldAccess
      | value=expr LBRACK index=expr RBRACK #ArrayAccess
@@ -97,9 +98,12 @@ POW             : '*^';
 // Keywords
 
 TYPE : 'type';
+VAR : 'var';
 LET : 'let';
 IN : 'in';
-VAR : 'var';
+IF : 'if';
+THEN : 'then';
+ELSE : 'else';
 UNIFORM : 'uniform';
 ATTR : 'attr';
 

@@ -103,6 +103,14 @@ public class DefaultExpressionVisitor<T> implements Expression.Visitor<T> {
     return null;
   }
 
+  @Override
+  public T visitIfThenElse(IfThenElse test) {
+    T childResult = test.getCondition().accept(this);
+    childResult = combine(childResult, test.getTrueExpression().accept(this));
+    childResult = combine(childResult, test.getFalseExpression().accept(this));
+    return childResult;
+  }
+
   protected T combine(T previous, T newest) {
     if (newest != null) {
       return newest;
