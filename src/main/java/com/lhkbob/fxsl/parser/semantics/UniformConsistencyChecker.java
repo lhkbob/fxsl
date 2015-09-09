@@ -3,9 +3,9 @@ package com.lhkbob.fxsl.parser.semantics;
 import com.lhkbob.fxsl.lang.Declaration;
 import com.lhkbob.fxsl.lang.Environment;
 import com.lhkbob.fxsl.lang.EnvironmentUtils;
-import com.lhkbob.fxsl.lang.expr.Attribute;
 import com.lhkbob.fxsl.lang.expr.DefaultExpressionVisitor;
 import com.lhkbob.fxsl.lang.expr.Expression;
+import com.lhkbob.fxsl.lang.expr.Uniform;
 import com.lhkbob.fxsl.lang.type.Type;
 
 import java.util.ArrayList;
@@ -17,52 +17,52 @@ import java.util.Map;
 /**
  *
  */
-public class AttributeConsistencyChecker implements SemanticsChecker {
+public class UniformConsistencyChecker implements SemanticsChecker {
   @Override
   public void validate(Environment environment) throws SemanticsException {
     List<SemanticsProblem> problems = new ArrayList<>();
-    AttributeVisitor visitor = new AttributeVisitor(environment);
+    UniformVisitor visitor = new UniformVisitor(environment);
     for (Declaration<Expression> var : EnvironmentUtils.getAllVariables(environment)) {
       problems.addAll(var.getValue().accept(visitor));
     }
 
     if (!problems.isEmpty()) {
       throw new SemanticsException(
-          "References to named attributes have inconsistent types", problems);
+          "References to named uniforms have inconsistent types", problems);
     }
   }
 
   @Override
   public boolean continueOnFailure() {
-    // Although all attributes with the same name need to have the same type, the code may otherwise
-    // be valid and can be processed.
+    // Although all uniforms with the same name need to have the same type, the code may otherwise
+    // be valid and can be processed for further semantic errors.
     return true;
   }
 
-  private static class AttributeVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
-    private final Map<String, Type> attributeTypes;
+  private static class UniformVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
+    private final Map<String, Type> uniformTypes;
     private final Environment environment;
 
-    public AttributeVisitor(Environment env) {
-      attributeTypes = new HashMap<>();
+    public UniformVisitor(Environment env) {
+      uniformTypes = new HashMap<>();
       environment = env;
     }
 
     @Override
-    public List<SemanticsProblem> visitAttribute(Attribute attr) {
-      Type actualType = environment.getExpressionType(attr);
-      Type existingType = attributeTypes.get(attr.getName());
+    public List<SemanticsProblem> visitUniform(Uniform uniform) {
+      Type actualType = environment.getExpressionType(uniform);
+      Type existingType = uniformTypes.get(uniform.getName());
       if (existingType != null) {
         // FIXME Is strict equality necessary, or can we allow different types as long as they unify?
         if (!existingType.equals(actualType)) {
           return Collections.<SemanticsProblem>singletonList(
               new SemanticsProblem.ExpressionProblem(
                   String.format(
-                      "Attribute has conflicting types (%s vs. %s)", actualType, existingType),
-                  attr));
+                      "Uniform has conflicting types (%s vs. %s)", actualType, existingType),
+                  uniform));
         }
       } else {
-        attributeTypes.put(attr.getName(), actualType);
+        uniformTypes.put(uniform.getName(), actualType);
       }
       return Collections.emptyList();
     }

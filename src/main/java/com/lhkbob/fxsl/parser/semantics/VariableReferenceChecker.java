@@ -45,7 +45,7 @@ public class VariableReferenceChecker implements SemanticsChecker {
 
     @Override
     public List<SemanticsProblem> visitVariable(VariableReference var) {
-      if (env.getVariable(var.getScope(), var.getVariableName()) == null) {
+      if (env.getDeclaredVariable(var.getScope(), var.getVariableName()) == null) {
         return Collections.<SemanticsProblem>singletonList(
             new SemanticsProblem.ExpressionProblem("Reference is undefined", var));
       } else {
