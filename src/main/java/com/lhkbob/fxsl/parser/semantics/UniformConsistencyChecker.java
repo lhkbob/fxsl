@@ -27,7 +27,7 @@ public class UniformConsistencyChecker implements SemanticsChecker {
 
   @Override
   public void validate(Environment environment) throws SemanticsException {
-    List<SemanticsProblem> problems = new ArrayList<>();
+    List<SemanticsProblem.ExpressionProblem> problems = new ArrayList<>();
     UniformVisitor visitor = new UniformVisitor(environment);
     for (Declaration<Expression> var : EnvironmentUtils.getAllVariables(environment)) {
       problems.addAll(var.getValue().accept(visitor));
@@ -39,7 +39,7 @@ public class UniformConsistencyChecker implements SemanticsChecker {
     }
   }
 
-  private static class UniformVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
+  private static class UniformVisitor extends DefaultExpressionVisitor.ListExpressionVisitor<SemanticsProblem.ExpressionProblem> {
     private final Environment environment;
     private final Map<String, Type> uniformTypes;
 
@@ -49,13 +49,13 @@ public class UniformConsistencyChecker implements SemanticsChecker {
     }
 
     @Override
-    public List<SemanticsProblem> visitUniform(Uniform uniform) {
+    public List<SemanticsProblem.ExpressionProblem> visitUniform(Uniform uniform) {
       Type actualType = environment.getExpressionType(uniform);
       Type existingType = uniformTypes.get(uniform.getName());
       if (existingType != null) {
         // FIXME Is strict equality necessary, or can we allow different types as long as they unify?
         if (!existingType.equals(actualType)) {
-          return Collections.<SemanticsProblem>singletonList(
+          return Collections.singletonList(
               new SemanticsProblem.ExpressionProblem(
                   String.format(
                       "Uniform has conflicting types (%s vs. %s)", actualType, existingType),
@@ -65,12 +65,6 @@ public class UniformConsistencyChecker implements SemanticsChecker {
         uniformTypes.put(uniform.getName(), actualType);
       }
       return Collections.emptyList();
-    }
-
-    @Override
-    protected List<SemanticsProblem> combine(
-        List<SemanticsProblem> old, List<SemanticsProblem> next) {
-      return SemanticsException.combineProblems(old, next);
     }
   }
 }

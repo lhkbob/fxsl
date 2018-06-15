@@ -20,14 +20,14 @@ import static org.junit.Assert.assertFalse;
  * @author Michael Ludwig
  */
 public class FunctionValueTest {
-    private static final Expression DEFAULT_RETURN_VALUE = new ParameterExpression(new Scope(), "a",
+    private static final Expression DEFAULT_RETURN_VALUE = new Parameter(new Scope(), "a",
                                                                                    PrimitiveType.INT);
 
     public static FunctionValue makeFunctionValue(Scope scope, List<String> names,
                                                   List<? extends Type> paramTypes, Expression returnValue) {
-        List<ParameterExpression> exprs = new ArrayList<>();
+        List<Parameter> exprs = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
-            exprs.add(new ParameterExpression(scope, names.get(i), paramTypes.get(i)));
+            exprs.add(new Parameter(scope, names.get(i), paramTypes.get(i)));
         }
         return new FunctionValue(scope, exprs, returnValue);
     }
@@ -43,11 +43,11 @@ public class FunctionValueTest {
                                                      PrimitiveType.INT);
 
         assertEquals(expectedType, value.getType());
-        assertEquals(Arrays.asList(new ParameterExpression(s, "a", PrimitiveType.INT),
-                                   new ParameterExpression(s, "b", PrimitiveType.FLOAT)),
+        assertEquals(Arrays.asList(new Parameter(s, "a", PrimitiveType.INT),
+                                   new Parameter(s, "b", PrimitiveType.FLOAT)),
                      value.getParameters());
-        assertEquals(new ParameterExpression(s, "a", PrimitiveType.INT), value.getParameter(0));
-        assertEquals(new ParameterExpression(s, "b", PrimitiveType.FLOAT), value.getParameter(1));
+        assertEquals(new Parameter(s, "a", PrimitiveType.INT), value.getParameter(0));
+        assertEquals(new Parameter(s, "b", PrimitiveType.FLOAT), value.getParameter(1));
         assertEquals(DEFAULT_RETURN_VALUE, value.getReturnValue());
         assertEquals(s, value.getScope());
     }
@@ -64,12 +64,12 @@ public class FunctionValueTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullNameElement() {
-        new FunctionValue(new Scope(), Arrays.asList((ParameterExpression) null), DEFAULT_RETURN_VALUE);
+        new FunctionValue(new Scope(), Arrays.asList((Parameter) null), DEFAULT_RETURN_VALUE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorEmptyParameters() {
-        new FunctionValue(new Scope(), Collections.<ParameterExpression>emptyList(), DEFAULT_RETURN_VALUE);
+        new FunctionValue(new Scope(), Collections.<Parameter>emptyList(), DEFAULT_RETURN_VALUE);
     }
 
     @Test(expected = NullPointerException.class)
@@ -79,11 +79,11 @@ public class FunctionValueTest {
 
     @Test
     public void testConstructorClonedParameters() {
-        List<ParameterExpression> params = new ArrayList<>();
-        params.add(new ParameterExpression(new Scope(), "boo", PrimitiveType.FLOAT));
+        List<Parameter> params = new ArrayList<>();
+        params.add(new Parameter(new Scope(), "boo", PrimitiveType.FLOAT));
 
         FunctionValue value = new FunctionValue(new Scope(), params, DEFAULT_RETURN_VALUE);
-        params.add(new ParameterExpression(new Scope(), "foo", PrimitiveType.INT));
+        params.add(new Parameter(new Scope(), "foo", PrimitiveType.INT));
 
         assertEquals(1, value.getParameters().size());
         assertEquals("boo", value.getParameter(0).getParameterName());
@@ -94,7 +94,7 @@ public class FunctionValueTest {
     public void testUnmodifiableParameterList() {
         FunctionValue value = makeFunctionValue(new Scope(), Arrays.asList("a"),
                                                 Arrays.asList(PrimitiveType.FLOAT), DEFAULT_RETURN_VALUE);
-        value.getParameters().add(new ParameterExpression(new Scope(), "b", PrimitiveType.INT));
+        value.getParameters().add(new Parameter(new Scope(), "b", PrimitiveType.INT));
     }
 
     @Test
@@ -152,7 +152,7 @@ public class FunctionValueTest {
             }
 
             @Override
-            public FunctionValue visitParameter(ParameterExpression param) {
+            public FunctionValue visitParameter(Parameter param) {
                 return null;
             }
 
@@ -177,7 +177,7 @@ public class FunctionValueTest {
             }
 
             @Override
-            public FunctionValue visitVariable(VariableExpression var) {
+            public FunctionValue visitVariable(VariableReference var) {
                 return null;
             }
 

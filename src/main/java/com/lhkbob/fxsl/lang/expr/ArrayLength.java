@@ -1,5 +1,6 @@
 package com.lhkbob.fxsl.lang.expr;
 
+import com.lhkbob.fxsl.lang.Environment;
 import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.lang.type.TypePath;
 import com.lhkbob.fxsl.util.EfficientEqualityBase;
@@ -44,7 +45,7 @@ public final class ArrayLength extends EfficientEqualityBase implements Expressi
 
   @Override
   public String toString() {
-    return String.format("__length(%s)", pathToArrayType);
+    return String.format("%slength(%s)", Environment.RESERVED_NAME_PREFIX, pathToArrayType);
   }
 
   @Override

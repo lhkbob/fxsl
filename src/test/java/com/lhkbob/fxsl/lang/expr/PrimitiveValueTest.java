@@ -57,7 +57,7 @@ public class PrimitiveValueTest {
     @Test
     public void testGetScope() {
         PrimitiveValue v = new PrimitiveValue(1);
-        Assert.assertEquals(Scope.PRIMITIVE_SCOPE, v.getScope());
+        Assert.assertEquals(Scope.NATIVE_SCOPE, v.getScope());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class PrimitiveValueTest {
             }
 
             @Override
-            public PrimitiveValue visitParameter(ParameterExpression param) {
+            public PrimitiveValue visitParameter(Parameter param) {
                 return null;
             }
 
@@ -110,7 +110,7 @@ public class PrimitiveValueTest {
             }
 
             @Override
-            public PrimitiveValue visitVariable(VariableExpression var) {
+            public PrimitiveValue visitVariable(VariableReference var) {
                 return null;
             }
 

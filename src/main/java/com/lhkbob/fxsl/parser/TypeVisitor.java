@@ -30,14 +30,12 @@ import static com.lhkbob.fxsl.util.Preconditions.notNull;
 public class TypeVisitor extends FXSLBaseVisitor<Type> {
   private final ParseContext context;
 
-  private final Map<Scope, Map<String, Integer>> lengthLabelMap;
-  private int lengthWildcardCounter;
+  private final Map<Scope, Map<String, ArrayType.Length>> lengthLabelMap;
 
   public TypeVisitor(ParseContext context) {
     notNull("context", context);
     this.context = context;
     lengthLabelMap = new HashMap<>();
-    lengthWildcardCounter = 0;
   }
 
   @Override
@@ -94,14 +92,14 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
             "Cannot specify a wildcard array length inside a type declaration: " + lengthName);
       }
 
-      int lengthID = getLengthID(lengthName);
+      ArrayType.Length lengthLabel = getLength(lengthName);
 
       // Create an expression in the current scope for this array, using the current type path
       TypePath path = context.getCurrentTypePath().create();
       Expression length = new ArrayLength(context.getCurrentScope(), path);
       context.getEnvironment().addDeclaredVariable(context.getCurrentScope(), lengthName, length);
       context.getEnvironment().setExpressionType(length, PrimitiveType.INT);
-      return new ArrayType(componentType, new ArrayType.Length(lengthID));
+      return new ArrayType(componentType, lengthLabel);
     }
   }
 
@@ -177,19 +175,15 @@ public class TypeVisitor extends FXSLBaseVisitor<Type> {
     return new UnionType(types);
   }
 
-  private int getLengthID(String label) {
-    Map<String, Integer> map = lengthLabelMap.get(context.getCurrentScope());
+  private ArrayType.Length getLength(String label) {
+    Map<String, ArrayType.Length> map = lengthLabelMap.get(context.getCurrentScope());
     if (map == null) {
       map = new HashMap<>();
       lengthLabelMap.put(context.getCurrentScope(), map);
     }
-    Integer id = map.get(label);
+    ArrayType.Length id = map.get(label);
     if (id == null) {
-      // Assign a new id, this is only ever called regarding a label in the current scope.
-      // If there's a higher scope with the same label, this is a new parameter and there's no need to
-      // recurse up parent scopes. Type inference may well bind them to the exact same thing, but that
-      // is handled later.
-      id = lengthWildcardCounter--; // go negative for wildcard ids
+      id = context.getEnvironment().newLengthWildcard();
       map.put(label, id);
     }
 

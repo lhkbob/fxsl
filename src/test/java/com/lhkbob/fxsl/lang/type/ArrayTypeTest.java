@@ -1,7 +1,7 @@
 package com.lhkbob.fxsl.lang.type;
 
 import com.lhkbob.fxsl.lang.Scope;
-import com.lhkbob.fxsl.lang.expr.ParameterExpression;
+import com.lhkbob.fxsl.lang.expr.Parameter;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -18,9 +18,9 @@ public class ArrayTypeTest {
         ArrayType t1a = new ArrayType(scope, PrimitiveType.INT, 5);
         ArrayType t1b = new ArrayType(scope, PrimitiveType.INT, 5);
         ArrayType t2a = new ArrayType(scope, PrimitiveType.FLOAT,
-                                      new ParameterExpression(scope, "a", PrimitiveType.INT));
+                                      new Parameter(scope, "a", PrimitiveType.INT));
         ArrayType t2b = new ArrayType(scope, PrimitiveType.FLOAT,
-                                      new ParameterExpression(scope, "a", PrimitiveType.INT));
+                                      new Parameter(scope, "a", PrimitiveType.INT));
 
         assertEquals(t1a, t1b);
         assertEquals(t2a, t2b);
@@ -63,9 +63,9 @@ public class ArrayTypeTest {
     public void testDifferentWildcardLengthsNotEquals() {
         Scope scope = new Scope();
         ArrayType t1 = new ArrayType(scope, PrimitiveType.INT,
-                                     new ParameterExpression(scope, "a", PrimitiveType.INT));
+                                     new Parameter(scope, "a", PrimitiveType.INT));
         ArrayType t2 = new ArrayType(scope, PrimitiveType.INT,
-                                     new ParameterExpression(scope, "b", PrimitiveType.INT));
+                                     new Parameter(scope, "b", PrimitiveType.INT));
         assertFalse(t1.equals(t2));
         assertFalse(t1.hashCode() == t2.hashCode());
     }
@@ -73,7 +73,7 @@ public class ArrayTypeTest {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorWildcardLengthBadType() {
         new ArrayType(new Scope(), PrimitiveType.INT,
-                      new ParameterExpression(new Scope(), "a", PrimitiveType.FLOAT));
+                      new Parameter(new Scope(), "a", PrimitiveType.FLOAT));
     }
 
     @Test(expected = NullPointerException.class)
@@ -113,7 +113,7 @@ public class ArrayTypeTest {
     public void testGetConcreteLength() {
         ArrayType t1 = new ArrayType(new Scope(), PrimitiveType.INT, 4);
         ArrayType t2 = new ArrayType(new Scope(), PrimitiveType.INT,
-                                     new ParameterExpression(new Scope(), "a", PrimitiveType.INT));
+                                     new Parameter(new Scope(), "a", PrimitiveType.INT));
         assertEquals(4, t1.getConcreteLength());
         assertTrue(t2.getConcreteLength() < 0);
     }
@@ -123,10 +123,10 @@ public class ArrayTypeTest {
         Scope scope = new Scope();
         ArrayType t1 = new ArrayType(scope, PrimitiveType.INT, 4);
         ArrayType t2 = new ArrayType(scope, PrimitiveType.INT,
-                                     new ParameterExpression(scope, "a", PrimitiveType.INT));
+                                     new Parameter(scope, "a", PrimitiveType.INT));
 
         assertNull(t1.getWildcardLength());
-        assertEquals(new ParameterExpression(scope, "a", PrimitiveType.INT), t2.getWildcardLength());
+        assertEquals(new Parameter(scope, "a", PrimitiveType.INT), t2.getWildcardLength());
     }
 
     @Test

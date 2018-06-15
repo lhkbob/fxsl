@@ -151,7 +151,7 @@ public class ArrayValueTest {
             }
 
             @Override
-            public ArrayValue visitParameter(ParameterExpression param) {
+            public ArrayValue visitParameter(Parameter param) {
                 return null;
             }
 
@@ -176,7 +176,7 @@ public class ArrayValueTest {
             }
 
             @Override
-            public ArrayValue visitVariable(VariableExpression var) {
+            public ArrayValue visitVariable(VariableReference var) {
                 return null;
             }
 

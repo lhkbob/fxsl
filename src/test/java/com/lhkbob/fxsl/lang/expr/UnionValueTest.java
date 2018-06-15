@@ -52,7 +52,7 @@ public class UnionValueTest {
         FunctionValue func1 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
                                                                   Arrays.asList(PrimitiveType.INT),
                                                                   new PrimitiveValue(1));
-        Expression func2 = new ParameterExpression(new Scope(), "b", new MetaType(new Scope()));
+        Expression func2 = new Parameter(new Scope(), "b", new MetaType(new Scope()));
 
         UnionValue value = makeValue(s, func1, func2);
 
@@ -76,7 +76,7 @@ public class UnionValueTest {
         FunctionValue func1 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
                                                                   Arrays.asList(PrimitiveType.INT),
                                                                   new PrimitiveValue(1));
-        Expression func2 = new ParameterExpression(new Scope(), "b", new MetaType(new Scope()));
+        Expression func2 = new Parameter(new Scope(), "b", new MetaType(new Scope()));
         UnionValue value1 = makeValue(s, func1, func2);
 
         FunctionValue func3 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
@@ -109,7 +109,7 @@ public class UnionValueTest {
         FunctionValue func1 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
                                                                   Arrays.asList(PrimitiveType.INT),
                                                                   new PrimitiveValue(1));
-        Expression func2 = new ParameterExpression(new Scope(), "b", new MetaType(new Scope()));
+        Expression func2 = new Parameter(new Scope(), "b", new MetaType(new Scope()));
         UnionValue value1 = makeValue(s, func1, func2);
 
         FunctionValue func3 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
@@ -119,7 +119,7 @@ public class UnionValueTest {
                                                                   Arrays.asList(PrimitiveType.BOOL),
                                                                   new PrimitiveValue(1.0f));
 
-        Expression value2 = new ParameterExpression(new Scope(), "a", UnionTypeTest
+        Expression value2 = new Parameter(new Scope(), "a", UnionTypeTest
                                                                               .makeType(s, func3.getType(),
                                                                                         func4.getType()));
 
@@ -243,7 +243,7 @@ public class UnionValueTest {
         FunctionValue func3 = FunctionValueTest.makeFunctionValue(s, Arrays.asList("a"),
                                                                   Arrays.asList(PrimitiveType.INT),
                                                                   new PrimitiveValue(1));
-        Expression func4 = new ParameterExpression(new Scope(), "b", new MetaType(new Scope()));
+        Expression func4 = new Parameter(new Scope(), "b", new MetaType(new Scope()));
 
         UnionValue v2 = makeValue(s, func3, func4);
         UnionValue v3a = makeValue(s, func1, func2, func3, func4);
@@ -295,7 +295,7 @@ public class UnionValueTest {
             }
 
             @Override
-            public UnionValue visitParameter(ParameterExpression param) {
+            public UnionValue visitParameter(Parameter param) {
                 return null;
             }
 
@@ -320,7 +320,7 @@ public class UnionValueTest {
             }
 
             @Override
-            public UnionValue visitVariable(VariableExpression var) {
+            public UnionValue visitVariable(VariableReference var) {
                 return null;
             }
 

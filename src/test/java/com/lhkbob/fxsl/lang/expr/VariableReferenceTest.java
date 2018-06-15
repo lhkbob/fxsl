@@ -8,18 +8,18 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Basic test cases for {@link com.lhkbob.fxsl.lang.expr.VariableExpression}.
+ * Basic test cases for {@link VariableReference}.
  *
  * @author Michael Ludwig
  */
-public class VariableExpressionTest {
+public class VariableReferenceTest {
     @Test
     public void testEqualsAndHashcode() {
         Scope shared = new Scope();
-        VariableExpression t1a = new VariableExpression(shared, "a");
-        VariableExpression t1b = new VariableExpression(shared, "a");
-        VariableExpression t2 = new VariableExpression(shared, "b");
-        VariableExpression t3 = new VariableExpression(new Scope(), "a");
+        VariableReference t1a = new VariableReference(shared, "a");
+        VariableReference t1b = new VariableReference(shared, "a");
+        VariableReference t2 = new VariableReference(shared, "b");
+        VariableReference t3 = new VariableReference(new Scope(), "a");
 
         assertEquals(t1a, t1b);
         assertEquals(t1a.hashCode(), t1b.hashCode());
@@ -32,7 +32,7 @@ public class VariableExpressionTest {
     @Test
     public void testGetters() {
         Scope scope = new Scope();
-        VariableExpression t = new VariableExpression(scope, "a", PrimitiveType.INT);
+        VariableReference t = new VariableReference(scope, "a", PrimitiveType.INT);
 
         assertEquals("a", t.getVariableName());
         assertEquals(scope, t.getScope());
@@ -41,76 +41,76 @@ public class VariableExpressionTest {
 
     @Test
     public void testConstructorNullKnownType() {
-        VariableExpression t = new VariableExpression(new Scope(), "a");
+        VariableReference t = new VariableReference(new Scope(), "a");
         assertTrue(t.getType() instanceof MetaType);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
-        new VariableExpression(null, "a");
+        new VariableReference(null, "a");
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullLabel() {
-        new VariableExpression(new Scope(), null);
+        new VariableReference(new Scope(), null);
     }
 
     @Test
     public void testAccept() {
-        VariableExpression t = new VariableExpression(new Scope(), "a");
-        VariableExpression visited = t.accept(new Expression.Visitor<VariableExpression>() {
+        VariableReference t = new VariableReference(new Scope(), "a");
+        VariableReference visited = t.accept(new Expression.Visitor<VariableReference>() {
             @Override
-            public VariableExpression visitArrayAccess(ArrayAccess access) {
+            public VariableReference visitArrayAccess(ArrayAccess access) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitArray(ArrayValue value) {
+            public VariableReference visitArray(ArrayValue value) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitFunctionCall(FunctionCall function) {
+            public VariableReference visitFunctionCall(FunctionCall function) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitFunction(FunctionValue function) {
+            public VariableReference visitFunction(FunctionValue function) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitParameter(ParameterExpression param) {
+            public VariableReference visitParameter(Parameter param) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitPrimitive(PrimitiveValue primitive) {
+            public VariableReference visitPrimitive(PrimitiveValue primitive) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitFieldAccess(StructFieldAccess access) {
+            public VariableReference visitFieldAccess(StructFieldAccess access) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitStruct(StructValue struct) {
+            public VariableReference visitStruct(StructValue struct) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitUnion(UnionValue union) {
+            public VariableReference visitUnion(UnionValue union) {
                 return null;
             }
 
             @Override
-            public VariableExpression visitVariable(VariableExpression var) {
+            public VariableReference visitVariable(VariableReference var) {
                 return var;
             }
 
             @Override
-            public VariableExpression visitNativeExpression(NativeExpression expr) {
+            public VariableReference visitNativeExpression(NativeExpression expr) {
                 return null;
             }
         });

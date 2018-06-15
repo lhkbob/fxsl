@@ -158,7 +158,7 @@ public class StructValueTest {
             }
 
             @Override
-            public StructValue visitParameter(ParameterExpression param) {
+            public StructValue visitParameter(Parameter param) {
                 return null;
             }
 
@@ -183,7 +183,7 @@ public class StructValueTest {
             }
 
             @Override
-            public StructValue visitVariable(VariableExpression var) {
+            public StructValue visitVariable(VariableReference var) {
                 return null;
             }
 

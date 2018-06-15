@@ -19,7 +19,7 @@ public class ArrayAccessTest {
     public void testWildcardArrayExpression() {
         // this tests the constructor with a wildcard array expression, getArray(), getIndex()
         Scope s = new Scope();
-        Expression array = new ParameterExpression(s, "value", new MetaType(s));
+        Expression array = new Parameter(s, "value", new MetaType(s));
         Expression index = new PrimitiveValue(4);
         ArrayAccess access = new ArrayAccess(s, array, index);
 
@@ -46,7 +46,7 @@ public class ArrayAccessTest {
         // this tests the constructor with a wildcard index expression and getIndex()
         Scope s = new Scope();
         Expression array = new ArrayValue(s, PrimitiveType.FLOAT, Arrays.asList(new PrimitiveValue(4.0f)));
-        Expression index = new ParameterExpression(s, "index", new MetaType(s));
+        Expression index = new Parameter(s, "index", new MetaType(s));
         ArrayAccess access = new ArrayAccess(s, array, index);
 
         assertEquals(PrimitiveType.FLOAT, access.getType());
@@ -67,18 +67,18 @@ public class ArrayAccessTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorNullIndex() {
         Scope s = new Scope();
-        new ArrayAccess(s, new ParameterExpression(s, "array", new MetaType(s)), null);
+        new ArrayAccess(s, new Parameter(s, "array", new MetaType(s)), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorBadIndexType() {
         Scope s = new Scope();
-        new ArrayAccess(s, new ParameterExpression(s, "array", new MetaType(s)), new PrimitiveValue(2.0f));
+        new ArrayAccess(s, new Parameter(s, "array", new MetaType(s)), new PrimitiveValue(2.0f));
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
-        new ArrayAccess(null, new ParameterExpression(new Scope(), "array", new MetaType(new Scope())),
+        new ArrayAccess(null, new Parameter(new Scope(), "array", new MetaType(new Scope())),
                         new PrimitiveValue(1));
     }
 
@@ -141,7 +141,7 @@ public class ArrayAccessTest {
             }
 
             @Override
-            public ArrayAccess visitParameter(ParameterExpression param) {
+            public ArrayAccess visitParameter(Parameter param) {
                 return null;
             }
 
@@ -166,7 +166,7 @@ public class ArrayAccessTest {
             }
 
             @Override
-            public ArrayAccess visitVariable(VariableExpression var) {
+            public ArrayAccess visitVariable(VariableReference var) {
                 return null;
             }
 

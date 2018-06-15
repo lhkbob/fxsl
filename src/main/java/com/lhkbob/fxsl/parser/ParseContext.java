@@ -61,7 +61,7 @@ public class ParseContext {
   }
 
   public boolean isInsideVariableDeclaration() {
-    return currentTypePath == null;
+    return currentTypePath != null;
   }
 
   public void pop() {

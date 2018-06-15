@@ -66,7 +66,7 @@ public class NativeExpressionTest {
             }
 
             @Override
-            public NativeExpression visitParameter(ParameterExpression param) {
+            public NativeExpression visitParameter(Parameter param) {
                 return null;
             }
 
@@ -91,7 +91,7 @@ public class NativeExpressionTest {
             }
 
             @Override
-            public NativeExpression visitVariable(VariableExpression var) {
+            public NativeExpression visitVariable(VariableReference var) {
                 return null;
             }
 

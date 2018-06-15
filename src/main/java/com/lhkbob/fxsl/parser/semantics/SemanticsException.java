@@ -46,22 +46,6 @@ public class SemanticsException extends Exception {
     this(message, cause, Arrays.asList(problems));
   }
 
-  public static List<SemanticsProblem> combineProblems(
-      List<SemanticsProblem> previous, List<SemanticsProblem> newest) {
-    if (newest != null) {
-      if (previous != null) {
-        // add to the previous one
-        previous.addAll(newest);
-        return previous;
-      } else {
-        // convert newest into an appendable list
-        return new ArrayList<>(newest);
-      }
-    } else {
-      return previous;
-    }
-  }
-
   public List<SemanticsProblem> getProblems() {
     return problems;
   }

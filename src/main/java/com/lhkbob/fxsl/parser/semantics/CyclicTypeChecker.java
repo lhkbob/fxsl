@@ -24,9 +24,14 @@ public class CyclicTypeChecker implements SemanticsChecker {
   @Override
   public void validate(Environment environment) throws SemanticsException {
     CyclicVisitor visitor = new CyclicVisitor(environment);
-    List<SemanticsProblem> allProblems = new ArrayList<>();
+    List<SemanticsProblem.TypeProblem> allProblems = new ArrayList<>();
     for (Declaration<Type> type : EnvironmentUtils.getAllTypes(environment)) {
-      allProblems.addAll(type.getValue().accept(visitor));
+      visitor.typeStack.push(type);
+      try {
+        allProblems.addAll(type.getValue().accept(visitor));
+      } finally {
+        visitor.typeStack.pop();
+      }
     }
 
     if (!allProblems.isEmpty()) {
@@ -34,43 +39,36 @@ public class CyclicTypeChecker implements SemanticsChecker {
     }
   }
 
-  private static class CyclicVisitor extends DefaultTypeVisitor<List<SemanticsProblem>> {
-    private final Stack<AliasType> aliasStack;
+  private static class CyclicVisitor extends DefaultTypeVisitor.ListTypeVisitor<SemanticsProblem.TypeProblem> {
+    private final Stack<Declaration<Type>> typeStack;
     private final Environment environment;
 
     public CyclicVisitor(Environment env) {
       environment = env;
-      aliasStack = new Stack<>();
+      typeStack = new Stack<>();
     }
 
     @Override
-    public List<SemanticsProblem> visitAliasType(AliasType alias) {
-      if (aliasStack.contains(alias)) {
+    public List<SemanticsProblem.TypeProblem> visitAliasType(AliasType alias) {
+      Declaration<Type> link = environment.getDeclaredType(alias.getScope(), alias.getLabel());
+      if (link == null) {
+        return Collections.singletonList(
+            new SemanticsProblem.TypeProblem("Aliased type is undefined", alias));
+      }
+
+      if (typeStack.contains(link)) {
         // A cycle exists in a type's definition
-        return Collections.<SemanticsProblem>singletonList(
+        return Collections.singletonList(
             new SemanticsProblem.TypeProblem("Type is cyclic", alias));
       }
 
       // Mark that this alias as being processed
-      aliasStack.push(alias);
-
-      Declaration<Type> link = environment.getDeclaredType(alias.getScope(), alias.getLabel());
-      if (link == null) {
-        return Collections.<SemanticsProblem>singletonList(
-            new SemanticsProblem.TypeProblem("Aliased type is undefined", alias));
-      }
-
+      typeStack.push(link);
       try {
         return link.getValue().accept(this);
       } finally {
-        aliasStack.pop();
+        typeStack.pop();
       }
-    }
-
-    @Override
-    protected List<SemanticsProblem> combine(
-        List<SemanticsProblem> old, List<SemanticsProblem> newer) {
-      return SemanticsException.combineProblems(old, newer);
     }
   }
 }

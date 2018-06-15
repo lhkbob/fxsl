@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
- * Basic test cases for {@link com.lhkbob.fxsl.lang.expr.ParameterExpression}.
+ * Basic test cases for {@link Parameter}.
  *
  * @author Michael Ludwig
  */
@@ -16,10 +16,10 @@ public class ParameterExpressionTest {
     @Test
     public void testEqualsAndHashcode() {
         Scope shared = new Scope();
-        ParameterExpression t1a = new ParameterExpression(shared, "a", PrimitiveType.INT);
-        ParameterExpression t1b = new ParameterExpression(shared, "a", PrimitiveType.INT);
-        ParameterExpression t2 = new ParameterExpression(shared, "b", PrimitiveType.INT);
-        ParameterExpression t3 = new ParameterExpression(new Scope(), "a", PrimitiveType.INT);
+        Parameter t1a = new Parameter(shared, "a", PrimitiveType.INT);
+        Parameter t1b = new Parameter(shared, "a", PrimitiveType.INT);
+        Parameter t2 = new Parameter(shared, "b", PrimitiveType.INT);
+        Parameter t3 = new Parameter(new Scope(), "a", PrimitiveType.INT);
 
         assertEquals(t1a, t1b);
         assertEquals(t1a.hashCode(), t1b.hashCode());
@@ -32,7 +32,7 @@ public class ParameterExpressionTest {
     @Test
     public void testGetters() {
         Scope scope = new Scope();
-        ParameterExpression t = new ParameterExpression(scope, "a", PrimitiveType.INT);
+        Parameter t = new Parameter(scope, "a", PrimitiveType.INT);
 
         assertEquals("a", t.getParameterName());
         assertEquals(PrimitiveType.INT, t.getType());
@@ -41,75 +41,75 @@ public class ParameterExpressionTest {
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
-        new ParameterExpression(null, "a", PrimitiveType.INT);
+        new Parameter(null, "a", PrimitiveType.INT);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullLabel() {
-        new ParameterExpression(new Scope(), null, PrimitiveType.INT);
+        new Parameter(new Scope(), null, PrimitiveType.INT);
     }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorNullType() {
-        new ParameterExpression(new Scope(), "a", null);
+        new Parameter(new Scope(), "a", null);
     }
 
     @Test
     public void testAccept() {
-        ParameterExpression t = new ParameterExpression(new Scope(), "a", PrimitiveType.INT);
-        ParameterExpression visited = t.accept(new Expression.Visitor<ParameterExpression>() {
+        Parameter t = new Parameter(new Scope(), "a", PrimitiveType.INT);
+        Parameter visited = t.accept(new Expression.Visitor<Parameter>() {
             @Override
-            public ParameterExpression visitArrayAccess(ArrayAccess access) {
+            public Parameter visitArrayAccess(ArrayAccess access) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitArray(ArrayValue value) {
+            public Parameter visitArray(ArrayValue value) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitFunctionCall(FunctionCall function) {
+            public Parameter visitFunctionCall(FunctionCall function) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitFunction(FunctionValue function) {
+            public Parameter visitFunction(FunctionValue function) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitParameter(ParameterExpression param) {
+            public Parameter visitParameter(Parameter param) {
                 return param;
             }
 
             @Override
-            public ParameterExpression visitPrimitive(PrimitiveValue primitive) {
+            public Parameter visitPrimitive(PrimitiveValue primitive) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitFieldAccess(StructFieldAccess access) {
+            public Parameter visitFieldAccess(StructFieldAccess access) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitStruct(StructValue struct) {
+            public Parameter visitStruct(StructValue struct) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitUnion(UnionValue union) {
+            public Parameter visitUnion(UnionValue union) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitVariable(VariableExpression var) {
+            public Parameter visitVariable(VariableReference var) {
                 return null;
             }
 
             @Override
-            public ParameterExpression visitNativeExpression(NativeExpression expr) {
+            public Parameter visitNativeExpression(NativeExpression expr) {
                 return null;
             }
         });

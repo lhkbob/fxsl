@@ -60,8 +60,12 @@ public final class Parameter extends EfficientEqualityBase implements Expression
    *
    * @return The parameter's name
    */
-  public String getParameterName() {
+  public String getName() {
     return name;
+  }
+
+  public FunctionValue getFunction() {
+    return function;
   }
 
   @Override

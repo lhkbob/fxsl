@@ -27,7 +27,7 @@ public class AttributeConsistencyChecker implements SemanticsChecker {
 
   @Override
   public void validate(Environment environment) throws SemanticsException {
-    List<SemanticsProblem> problems = new ArrayList<>();
+    List<SemanticsProblem.ExpressionProblem> problems = new ArrayList<>();
     AttributeVisitor visitor = new AttributeVisitor(environment);
     for (Declaration<Expression> var : EnvironmentUtils.getAllVariables(environment)) {
       problems.addAll(var.getValue().accept(visitor));
@@ -39,7 +39,7 @@ public class AttributeConsistencyChecker implements SemanticsChecker {
     }
   }
 
-  private static class AttributeVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
+  private static class AttributeVisitor extends DefaultExpressionVisitor.ListExpressionVisitor<SemanticsProblem.ExpressionProblem> {
     private final Map<String, Type> attributeTypes;
     private final Environment environment;
 
@@ -49,13 +49,13 @@ public class AttributeConsistencyChecker implements SemanticsChecker {
     }
 
     @Override
-    public List<SemanticsProblem> visitAttribute(Attribute attr) {
+    public List<SemanticsProblem.ExpressionProblem> visitAttribute(Attribute attr) {
       Type actualType = environment.getExpressionType(attr);
       Type existingType = attributeTypes.get(attr.getName());
       if (existingType != null) {
         // FIXME Is strict equality necessary, or can we allow different types as long as they unify?
         if (!existingType.equals(actualType)) {
-          return Collections.<SemanticsProblem>singletonList(
+          return Collections.singletonList(
               new SemanticsProblem.ExpressionProblem(
                   String.format(
                       "Attribute has conflicting types (%s vs. %s)", actualType, existingType),
@@ -65,12 +65,6 @@ public class AttributeConsistencyChecker implements SemanticsChecker {
         attributeTypes.put(attr.getName(), actualType);
       }
       return Collections.emptyList();
-    }
-
-    @Override
-    protected List<SemanticsProblem> combine(
-        List<SemanticsProblem> old, List<SemanticsProblem> next) {
-      return SemanticsException.combineProblems(old, next);
     }
   }
 }

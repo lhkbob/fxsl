@@ -1,5 +1,6 @@
 package com.lhkbob.fxsl.lang.type;
 
+import com.lhkbob.fxsl.lang.Environment;
 import com.lhkbob.fxsl.util.EfficientEqualityBase;
 import com.lhkbob.fxsl.util.Immutable;
 
@@ -64,7 +65,7 @@ public final class ArrayType extends EfficientEqualityBase implements Type {
     @Override
     public String toString() {
       if (isWildcard()) {
-        return "__" + Integer.toHexString(-length);
+        return String.format("%sl_%s", Environment.RESERVED_NAME_PREFIX, Integer.toHexString(-length));
       } else {
         return Integer.toString(length);
       }

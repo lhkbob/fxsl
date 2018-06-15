@@ -1,5 +1,6 @@
 package com.lhkbob.fxsl.lang.type;
 
+import com.lhkbob.fxsl.lang.Environment;
 import com.lhkbob.fxsl.lang.Scope;
 import com.lhkbob.fxsl.util.Immutable;
 
@@ -68,6 +69,6 @@ public class MetaType implements Type {
 
   @Override
   public String toString() {
-    return "__m" + Integer.toHexString(System.identityHashCode(this));
+    return String.format("%sm_%s", Environment.RESERVED_NAME_PREFIX, Integer.toHexString(hashCode()));
   }
 }

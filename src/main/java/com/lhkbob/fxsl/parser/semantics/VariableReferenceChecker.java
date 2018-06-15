@@ -23,12 +23,9 @@ public class VariableReferenceChecker implements SemanticsChecker {
   @Override
   public void validate(Environment environment) throws SemanticsException {
     VariableVisitor visitor = new VariableVisitor(environment);
-    List<SemanticsProblem> problems = new ArrayList<>();
+    List<SemanticsProblem.ExpressionProblem> problems = new ArrayList<>();
     for (Declaration<Expression> expr : EnvironmentUtils.getAllVariables(environment)) {
-      List<SemanticsProblem> forExpr = expr.getValue().accept(visitor);
-      if (forExpr != null) {
-        problems.addAll(forExpr);
-      }
+        problems.addAll(expr.getValue().accept(visitor));
     }
 
     if (!problems.isEmpty()) {
@@ -36,7 +33,7 @@ public class VariableReferenceChecker implements SemanticsChecker {
     }
   }
 
-  private static class VariableVisitor extends DefaultExpressionVisitor<List<SemanticsProblem>> {
+  private static class VariableVisitor extends DefaultExpressionVisitor.ListExpressionVisitor<SemanticsProblem.ExpressionProblem> {
     private final Environment env;
 
     public VariableVisitor(Environment env) {
@@ -44,19 +41,13 @@ public class VariableReferenceChecker implements SemanticsChecker {
     }
 
     @Override
-    public List<SemanticsProblem> visitVariable(VariableReference var) {
+    public List<SemanticsProblem.ExpressionProblem> visitVariable(VariableReference var) {
       if (env.getDeclaredVariable(var.getScope(), var.getVariableName()) == null) {
-        return Collections.<SemanticsProblem>singletonList(
+        return Collections.singletonList(
             new SemanticsProblem.ExpressionProblem("Reference is undefined", var));
       } else {
         return null;
       }
-    }
-
-    @Override
-    protected List<SemanticsProblem> combine(
-        List<SemanticsProblem> old, List<SemanticsProblem> next) {
-      return SemanticsException.combineProblems(old, next);
     }
   }
 }

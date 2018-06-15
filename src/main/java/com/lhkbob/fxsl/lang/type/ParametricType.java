@@ -59,7 +59,13 @@ public class ParametricType extends EfficientEqualityBase implements Type {
 
   @Override
   public String toString() {
-    return "_" + label + "(in " + scope + ")";
+    if (label.startsWith("_")) {
+      // This was a generalized parametric type, so its intended to be unique over the
+      // environment so no need to append the (in scope) business
+      return "_" + label;
+    } else {
+      return "_" + label + "(in " + scope + ")";
+    }
   }
 
   @Override

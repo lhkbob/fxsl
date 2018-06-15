@@ -25,6 +25,7 @@ import java.util.WeakHashMap;
  *
  */
 public class Environment {
+  public static final String RESERVED_NAME_PREFIX = "__";
   public static final NativeExpression BINARY_ADD_FLOAT = nativeFunction(
       "float add", PrimitiveType.FLOAT, PrimitiveType.FLOAT, PrimitiveType.FLOAT);
   public static final NativeExpression BINARY_ADD_INT = nativeFunction(
@@ -90,6 +91,8 @@ public class Environment {
   private final Scope rootScope;
   private final Map<Scope, ScopeRules> scopeRules;
   private State state;
+  private int lengthUniqueCounter;
+  private int paramUniqueCounter;
 
   public Environment() {
     this(null);
@@ -107,8 +110,12 @@ public class Environment {
       configureNativeScope(nativeRules);
       scopeRules.put(Scope.NATIVE_SCOPE, nativeRules);
       rootScope = new Scope(Scope.NATIVE_SCOPE);
+      lengthUniqueCounter = 0;
+      paramUniqueCounter = 0;
     } else {
       rootScope = parent.rootScope;
+      lengthUniqueCounter = parent.lengthUniqueCounter;
+      paramUniqueCounter = parent.paramUniqueCounter;
     }
 
     state = State.READY;
@@ -165,6 +172,8 @@ public class Environment {
         parent.defs.putAll(child.defs);
       }
     }
+    parent.lengthUniqueCounter = lengthUniqueCounter;
+    parent.paramUniqueCounter = paramUniqueCounter;
 
     state = State.COMMITTED;
 
@@ -173,6 +182,17 @@ public class Environment {
     // and should be changed to ready
     parent.state = State.READY;
     return parent;
+  }
+
+  public ArrayType.Length newLengthWildcard() {
+    // Wildcard lengths are <= 0, which is why we decrement the counter
+    int length = lengthUniqueCounter--;
+    return new ArrayType.Length(length);
+  }
+
+  public ParametricType newParametricType(Scope scope) {
+    String label = "_p_" + Integer.toHexString(paramUniqueCounter++);
+    return new ParametricType(scope, label);
   }
 
   public ArrayType.Length getBoundArrayLength(ArrayType.Length wildcard) {
@@ -482,10 +502,6 @@ public class Environment {
     return new NativeExpression(name, new FunctionType(Arrays.asList(paramTypes), returnType));
   }
 
-  // FIXME This class needs to be updated to include generating new unique names for paramatric types,
-  // new names for implicit parameter expressions (however I decided to do that). It needs to maintain
-  // an alias stack that the type unifier and inferrer, generalizer can use to detect cycles as its
-  // processing types.
   private enum State {
     READY,
     LOCKED,

@@ -21,7 +21,7 @@ public class FunctionCallTest {
     @Test
     public void testSimpleFunctionCall() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT)),
                                                    new PrimitiveValue(2));
         Scope scope = new Scope();
@@ -37,7 +37,7 @@ public class FunctionCallTest {
 
     @Test
     public void testWildcardFunctionCall() {
-        Expression function = new ParameterExpression(new Scope(), "a", new MetaType(new Scope()));
+        Expression function = new Parameter(new Scope(), "a", new MetaType(new Scope()));
         Scope scope = new Scope();
         FunctionCall call = new FunctionCall(scope, function, Arrays.asList(new PrimitiveValue(1)));
 
@@ -52,11 +52,11 @@ public class FunctionCallTest {
     @Test
     public void testSingleOptionUnionCall() {
         FunctionValue matched = new FunctionValue(new Scope(),
-                                                  Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                  Arrays.asList(new Parameter(new Scope(), "a",
                                                                                         PrimitiveType.INT)),
                                                   new PrimitiveValue(2));
         FunctionValue notMatched = new FunctionValue(new Scope(),
-                                                     Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                     Arrays.asList(new Parameter(new Scope(), "a",
                                                                                            PrimitiveType.BOOL)),
                                                      new PrimitiveValue(2.0f));
         UnionValue function = UnionValueTest.makeValue(new Scope(), matched, notMatched);
@@ -72,11 +72,11 @@ public class FunctionCallTest {
     @Test
     public void testMultipleOptionUnionCall() {
         FunctionValue matched = new FunctionValue(new Scope(),
-                                                  Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                  Arrays.asList(new Parameter(new Scope(), "a",
                                                                                         PrimitiveType.INT)),
                                                   new PrimitiveValue(2));
         FunctionValue notMatched = new FunctionValue(new Scope(),
-                                                     Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                     Arrays.asList(new Parameter(new Scope(), "a",
                                                                                            PrimitiveType.BOOL)),
                                                      new PrimitiveValue(2.0f));
         UnionValue function = UnionValueTest.makeValue(new Scope(), matched, notMatched);
@@ -91,9 +91,9 @@ public class FunctionCallTest {
     @Test
     public void testCurriedFunctionCall() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         FunctionCall curry = new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1)));
@@ -113,9 +113,9 @@ public class FunctionCallTest {
     @Test(expected = IllegalArgumentException.class)
     public void testNoMatchingSignature() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(new Scope(), function,
@@ -125,9 +125,9 @@ public class FunctionCallTest {
     @Test(expected = IllegalArgumentException.class)
     public void testTooManyArguments() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1), new PrimitiveValue(3.0f),
@@ -147,9 +147,9 @@ public class FunctionCallTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorNullParameterList() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(new Scope(), function, null);
@@ -158,9 +158,9 @@ public class FunctionCallTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorNullParameter() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1), null));
@@ -169,9 +169,9 @@ public class FunctionCallTest {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorEmptyParameters() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(new Scope(), function, Collections.<Expression>emptyList());
@@ -180,9 +180,9 @@ public class FunctionCallTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorNullScope() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         new FunctionCall(null, function, Arrays.asList(new PrimitiveValue(1), new PrimitiveValue(2)));
@@ -191,13 +191,13 @@ public class FunctionCallTest {
     @Test
     public void testEqualsAndHashcode() {
         FunctionValue function1 = new FunctionValue(new Scope(),
-                                                    Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                    Arrays.asList(new Parameter(new Scope(), "a",
                                                                                           PrimitiveType.INT),
-                                                                  new ParameterExpression(new Scope(), "b",
+                                                                  new Parameter(new Scope(), "b",
                                                                                           PrimitiveType.FLOAT)),
                                                     new PrimitiveValue(2));
         FunctionValue function2 = new FunctionValue(new Scope(),
-                                                    Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                    Arrays.asList(new Parameter(new Scope(), "a",
                                                                                           PrimitiveType.INT)),
                                                     new PrimitiveValue(2));
 
@@ -228,9 +228,9 @@ public class FunctionCallTest {
     @Test
     public void testAccept() {
         FunctionValue function = new FunctionValue(new Scope(),
-                                                   Arrays.asList(new ParameterExpression(new Scope(), "a",
+                                                   Arrays.asList(new Parameter(new Scope(), "a",
                                                                                          PrimitiveType.INT),
-                                                                 new ParameterExpression(new Scope(), "b",
+                                                                 new Parameter(new Scope(), "b",
                                                                                          PrimitiveType.FLOAT)),
                                                    new PrimitiveValue(2));
         FunctionCall call = new FunctionCall(new Scope(), function, Arrays.asList(new PrimitiveValue(1)));
@@ -256,7 +256,7 @@ public class FunctionCallTest {
             }
 
             @Override
-            public FunctionCall visitParameter(ParameterExpression param) {
+            public FunctionCall visitParameter(Parameter param) {
                 return null;
             }
 
@@ -281,7 +281,7 @@ public class FunctionCallTest {
             }
 
             @Override
-            public FunctionCall visitVariable(VariableExpression var) {
+            public FunctionCall visitVariable(VariableReference var) {
                 return null;
             }
 

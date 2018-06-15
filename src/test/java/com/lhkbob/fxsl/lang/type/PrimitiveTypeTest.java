@@ -33,13 +33,13 @@ public class PrimitiveTypeTest {
 
     @Test
     public void testGetScope() {
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.INT.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.FLOAT.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.BOOL.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.SAMPLER1D.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.SAMPLER2D.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.SAMPLER3D.getScope());
-        assertEquals(Scope.PRIMITIVE_SCOPE, PrimitiveType.SAMPLERCUBE.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.INT.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.FLOAT.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.BOOL.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.SAMPLER1D.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.SAMPLER2D.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.SAMPLER3D.getScope());
+        assertEquals(Scope.NATIVE_SCOPE, PrimitiveType.SAMPLERCUBE.getScope());
     }
 
     @Test
